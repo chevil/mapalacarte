@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map A La Carte</title>
+  <link href="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.css" rel="stylesheet">
+  <script src="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.js"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { width: 100vw; height: 100vh; }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script>
+
+let map = null;
+
+var strstr = function (haystack, needle) {
+  if (needle.length === 0) return -1;
+  for (let i = 0; i <= haystack.length - needle.length; i++) {
+    if (needle === haystack.substring(i, i + needle.length)) {
+      return i;
+    }
+  }
+  return -1;
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+
+  map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://tiles.openfreemap.org/styles/liberty',
+    center: [2.1686, 41.3874],
+    zoom: 10
+  });
+
+  // Add navigation controls (zoom, compass)
+  map.addControl(new maplibregl.NavigationControl());
+
+  // Restyle layers once the map is loaded
+  map.on('load', () => {
+    const layers = map.getStyle().layers;
+    console.log('end of onload');
+
+    //GUSTOM_CODE 
+
+  });
+
+});
+</script>
+
+</body>
+</html>

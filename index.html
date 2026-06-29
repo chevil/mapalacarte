@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map A La Carte</title>
+  <link href="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.css" rel="stylesheet">
+  <script src="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.js"></script>
+  <script src="js/jquery.js"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { width: 100vw; height: 100vh; }
+    #layyours { position: absolute; top: 50px; left: 20px}
+    #paintpropes { position: absolute; z-index: 1000; background: #888888; 
+                   border-radius: 20px; padding: 10px; color: #ffffff; display: none;
+                   height: 150px; width: 350px; bottom: 50px; right: 50px}
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+<select id="layyours" onfocus="this.selectedIndex = -1;"></select>
+<div id="paintpropes"></div>
+
+<script>
+
+let map = null;
+let paint = null;
+let lastlayer = null;
+let gustom = '';
+
+var strstr = function (haystack, needle) {
+  if (needle.length === 0) return -1;
+  for (let i = 0; i <= haystack.length - needle.length; i++) {
+    if (needle === haystack.substring(i, i + needle.length)) {
+      return i;
+    }
+  }
+  return -1;
+};
+
+function applyPropes(e) {
+  console.log("apply propes");
+  for (var key in paint) {
+    let value = document.querySelector('input[name='+key+']').value;
+    console.log( key + " ==> " + value );
+
+    // build expression if necessary
+    let expression = null;
+    if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+       var varray = value.split(',');
+    }
+    if ( value == 'true' ) {
+      map.setPaintProperty(lastlayer, key, true);
+      gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", true );\n';
+    }
+    else if ( value == 'false' ) {
+      map.setPaintProperty(lastlayer, key, false);
+      gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", false );\n';
+    }
+    else if ( strstr( key, 'opacity' ) >= 0 ||
+              strstr( key, 'blur' ) >= 0 ) { // accepts float
+      if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+        // map.setPaintProperty(lastlayer, key, expression);
+      } else { // accepts float
+        map.setPaintProperty(lastlayer, key, parseFloat(value));
+        gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", parseFloat("'+value+'") );\n';
+      }
+    } 
+    else if ( strstr(key, 'color' ) >= 0 ) { 
+      if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+        // map.setPaintProperty(lastlayer, key, expression);
+      } else { // accepts string
+        map.setPaintProperty(lastlayer, key, value);
+        gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
+      }
+    }
+    else if ( strstr(key, 'width' ) >= 0 ) { 
+      if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+        // map.setPaintProperty(lastlayer, key, expression);
+      } else { // accepts int
+        map.setPaintProperty(lastlayer, key, parseInt(value) );
+        gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", parseInt("'+value+'") );\n';
+      }
+    }
+    else if ( strstr(key, 'dash' ) >= 0 ) { // accepts number array
+      var varray = JSON.parse("[" + value + "]");
+      map.setPaintProperty(lastlayer, key, varray);
+      gustom += 'var varray = JSON.parse("[' + value + ']");\n';
+      gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", varray );\n';
+    }
+    else { // try anyway to see if it accepts string
+      map.setPaintProperty(lastlayer, key, value);
+      gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
+    }
+  }
+  document.querySelector('#paintpropes').innerHTML = '';
+  document.querySelector('#paintpropes').style.display = 'none';
+  alert(gustom);
+}
+
+function setVisible(option) {
+
+  console.log("option : " + option.target.value );
+  lastlayer = option.target.value;
+  map.setLayoutProperty(option.target.value, 'visibility', 'visible');
+  gustom += 'map.setLayoutProperty("'+option.target.value+'", "visibility", "visible");\n';
+  // option 1 : getting the big map style
+  let styleJson = map.getStyle();
+  // console.log( 'this is the map layers style : ' + JSON.stringify(styleJson.layers) );
+  let layers = styleJson.layers;
+  for (layer in layers ) {
+    // console.log( 'another heavy layer : ' + JSON.stringify(layers[layer].id));
+    if ( layers[layer].id.toString() == option.target.value.toString() ) {
+       paint = layers[layer].paint;
+    }
+  }
+  console.log( 'here is the paint : ' + JSON.stringify(paint) );
+
+  let temele = '<center>'+lastlayer+'</center>';
+  temele += '<form onsubmit="applyPropes(); return false;" id="propresForm"><table width=100%>';
+  for (var key in paint) {
+       temele += '<tr><td>'+key+'</td>';
+       temele += '<td><input type=text value="'+paint[key]+'" name="'+key+'"></input></td></tr>';
+  }
+  temele += '<tr><td colspan=2 align=center><input type=submit value="Change"></input></td></tr>';
+  temele += '</table></form>';
+  document.querySelector('#paintpropes').innerHTML = temele;
+  document.querySelector('#paintpropes').style.display = 'block';
+
+  // option 2 : getting the layer style, but it returns undefined
+  // let layer = map.getLayer(option);
+  // console.log( 'this is the layer : ' + JSON.stringify(layer) );
+  // let paint = layer.getPaintAffectingGlobalStateRefs(); 
+  // console.log( 'this is the layer paint : ' + JSON.stringify(paint) );
+
+  return false;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+
+  map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://tiles.openfreemap.org/styles/liberty',
+    center: [2.1686, 41.3874],
+    zoom: 10
+  });
+
+  // Add navigation controls (zoom, compass)
+  map.addControl(new maplibregl.NavigationControl());
+
+  // Restyle layers once the map is loaded
+  map.on('load', () => {
+
+    // Example: dark water
+    // map.setPaintProperty('water', 'fill-color', '#871625');
+    // map.setPaintProperty('water', 'fill-color', '#19e518');
+    // map.setPaintProperty('background', 'fill-color', '#ffa500');
+
+    // Example: blue woods
+    // map.setPaintProperty('landcover_wood', 'fill-color', '#1a1aff');
+    // map.setPaintProperty('park', 'fill-color', '#1a1a00');
+    // map.setPaintProperty('road_motorway', 'paint-color', '#ff0000');
+
+    // Example: others
+    // map.setPaintProperty('road_minor', 'fill-color', '#ff1a00');
+    // map.setPaintProperty('road_motorway', 'fill-color', '#ff1a00');
+
+    // Example: hide buildings
+    // map.setLayoutProperty('building', 'visibility', 'none');
+    // map.setLayoutProperty('building-3d', 'visibility', 'none');
+
+    // Add a marker
+    new maplibregl.Marker({ color: '#ff4444' })
+      .setLngLat([2.1686, 41.3874])
+      .setPopup(new maplibregl.Popup().setHTML('<b>Centre Del Mon</b>'))
+      .addTo(map);
+
+    const layers = map.getStyle().layers;
+    console.log('end of onload');
+    const layyours = document.getElementById("layyours");
+    for (const layer of layers) {
+       map.setLayoutProperty(layer.id, 'visibility', 'none');
+       console.log(layer.id );
+       var opt = document.createElement("option"); 
+       opt.text = layer.id;
+       opt.value = layer.id
+       layyours.options.add(opt);
+    }
+    layyours.addEventListener('change', setVisible);
+    gustom += 'const layers = map.getStyle().layers;\n';
+    gustom += 'for (const layer of layers) {\n';
+    gustom += '   map.setLayoutProperty(layer.id, "visibility", "none");\n';
+    gustom += '}\n';
+    // console.log(layers);
+    // console.log(layers.map(l => l.id));
+  });
+
+});
+</script>
+
+</body>
+</html>
