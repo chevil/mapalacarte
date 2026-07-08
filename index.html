@@ -4,16 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Map A La Carte</title>
+
   <link href="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.css" rel="stylesheet">
+  <link href="css/alertify.core.css" rel="stylesheet">
+  <link href="css/alertify.min.css" rel="stylesheet">
+  <link href="css/alertify.bootstrap.css" rel="stylesheet">
+
   <script src="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.js"></script>
   <script src="js/jquery.js"></script>
+  <script src="js/alertify.min.js"></script>
+
   <style>
     body { margin: 0; padding: 0; }
     #map { width: 100vw; height: 100vh; }
-    #layyours { position: absolute; top: 50px; left: 20px}
+    #layyours { position: absolute; top: 50px; left: 20px; background: #ae782355; color: #000000; }
     #paintpropes { position: absolute; z-index: 1000; background: #888888; 
                    border-radius: 20px; padding: 10px; color: #ffffff; display: none;
-                   height: 150px; width: 350px; bottom: 50px; right: 50px}
+                   height: 150px; width: 350px; bottom: 50px; right: 50px }
+    #save { position: absolute; bottom: 50px; left: 20px }
+    #dosave { background: #ae782355; color: #000000; }
   </style>
 </head>
 <body>
@@ -21,6 +30,10 @@
 <div id="map"></div>
 <select id="layyours"></select>
 <div id="paintpropes"></div>
+<div id="save">
+<input id="mapname" type="text" cols=40 placeholder="Map Name" />
+<input id="dosave" type="submit" value="Save this Map" />
+</div>
 
 <script>
 
@@ -28,6 +41,7 @@ let map = null;
 let paint = null;
 let lastlayer = null;
 let gustom = '';
+let pustom = '                ';
 
 var strstr = function (haystack, needle) {
   if (needle.length === 0) return -1;
@@ -39,8 +53,17 @@ var strstr = function (haystack, needle) {
   return -1;
 };
 
+function postIt(e) {
+  console.log( "don't click me, i'm sleeping" );
+  const mapname = document.getElementById( "mapname");
+  if ( mapname.value == '' || mapname.value == null ) {
+     alertify.alert( "Please, fill in the Map Name" );
+     return false;
+  }
+}
+
 function applyPropes(e) {
-  console.log("apply propes");
+
   for (var key in paint) {
     let value = document.querySelector('input[name='+key+']').value;
     console.log( key + " ==> " + value );
@@ -52,11 +75,11 @@ function applyPropes(e) {
     }
     if ( value == 'true' ) {
       map.setPaintProperty(lastlayer, key, true);
-      gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", true );\n';
+      gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", true );\n';
     }
     else if ( value == 'false' ) {
       map.setPaintProperty(lastlayer, key, false);
-      gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", false );\n';
+      gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", false );\n';
     }
     else if ( strstr( key, 'opacity' ) >= 0 ||
               strstr( key, 'blur' ) >= 0 ) { // accepts float
@@ -64,7 +87,7 @@ function applyPropes(e) {
         // map.setPaintProperty(lastlayer, key, expression);
       } else { // accepts float
         map.setPaintProperty(lastlayer, key, parseFloat(value));
-        gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", parseFloat("'+value+'") );\n';
+        gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", parseFloat("'+value+'") );\n';
       }
     } 
     else if ( strstr(key, 'color' ) >= 0 ) { 
@@ -72,7 +95,7 @@ function applyPropes(e) {
         // map.setPaintProperty(lastlayer, key, expression);
       } else { // accepts string
         map.setPaintProperty(lastlayer, key, value);
-        gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
+        gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
       }
     }
     else if ( strstr(key, 'width' ) >= 0 ) { 
@@ -80,18 +103,18 @@ function applyPropes(e) {
         // map.setPaintProperty(lastlayer, key, expression);
       } else { // accepts int
         map.setPaintProperty(lastlayer, key, parseInt(value) );
-        gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", parseInt("'+value+'") );\n';
+        gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", parseInt("'+value+'") );\n';
       }
     }
     else if ( strstr(key, 'dash' ) >= 0 ) { // accepts number array
       var varray = JSON.parse("[" + value + "]");
       map.setPaintProperty(lastlayer, key, varray);
-      gustom += 'var varray = JSON.parse("[' + value + ']");\n';
-      gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", varray );\n';
+      gustom += pustom+'var varray = JSON.parse("[' + value + ']");\n';
+      gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", varray );\n';
     }
     else { // try anyway to see if it accepts string
       map.setPaintProperty(lastlayer, key, value);
-      gustom += 'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
+      gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
     }
   }
   document.querySelector('#paintpropes').innerHTML = '';
@@ -104,7 +127,7 @@ function setVisible(option) {
   console.log("option : " + option.target.value );
   lastlayer = option.target.value;
   map.setLayoutProperty(option.target.value, 'visibility', 'visible');
-  gustom += 'map.setLayoutProperty("'+option.target.value+'", "visibility", "visible");\n';
+  gustom += pustom+'map.setLayoutProperty("'+option.target.value+'", "visibility", "visible");\n';
   // option 1 : getting the big map style
   let styleJson = map.getStyle();
   // console.log( 'this is the map layers style : ' + JSON.stringify(styleJson.layers) );
@@ -139,11 +162,14 @@ function setVisible(option) {
 
 document.addEventListener('DOMContentLoaded', function() {
 
+  const dosave = document.getElementById("dosave");
+  dosave.addEventListener('click', postIt);
+
   map = new maplibregl.Map({
     container: 'map',
     style: 'https://tiles.openfreemap.org/styles/liberty',
     center: [2.1686, 41.3874],
-    zoom: 10
+    zoom: 4
   });
 
   // Add navigation controls (zoom, compass)
@@ -187,11 +213,12 @@ document.addEventListener('DOMContentLoaded', function() {
        opt.value = layer.id
        layyours.options.add(opt);
     }
+    map.setLayoutProperty('background', 'visibility', 'visible');
     layyours.addEventListener('change', setVisible);
-    gustom += 'const layers = map.getStyle().layers;\n';
-    gustom += 'for (const layer of layers) {\n';
-    gustom += '   map.setLayoutProperty(layer.id, "visibility", "none");\n';
-    gustom += '}\n';
+    gustom += pustom+'const layers = map.getStyle().layers;\n';
+    gustom += pustom+'for (const layer of layers) {\n';
+    gustom += pustom+'   map.setLayoutProperty(layer.id, "visibility", "none");\n';
+    gustom += pustom+'}\n';
     // console.log(layers);
     // console.log(layers.map(l => l.id));
   });
