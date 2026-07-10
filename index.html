@@ -7,8 +7,7 @@
 
   <link href="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.css" rel="stylesheet">
   <link href="css/alertify.core.css" rel="stylesheet">
-  <link href="css/alertify.min.css" rel="stylesheet">
-  <link href="css/alertify.bootstrap.css" rel="stylesheet">
+  <link href="css/alertify.default.css" rel="stylesheet">
 
   <script src="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.js"></script>
   <script src="js/jquery.js"></script>
@@ -64,70 +63,95 @@ function postIt(e) {
 
 function applyPropes(e) {
 
-  for (var key in paint) {
-    let value = document.querySelector('input[name='+key+']').value;
-    console.log( key + " ==> " + value );
-
-    // build expression if necessary
-    let expression = null;
-    if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
-       var varray = value.split(',');
-    }
-    if ( value == 'true' ) {
-      map.setPaintProperty(lastlayer, key, true);
-      gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", true );\n';
-    }
-    else if ( value == 'false' ) {
-      map.setPaintProperty(lastlayer, key, false);
-      gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", false );\n';
-    }
-    else if ( strstr( key, 'opacity' ) >= 0 ||
-              strstr( key, 'blur' ) >= 0 ) { // accepts float
-      if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
-        // map.setPaintProperty(lastlayer, key, expression);
-      } else { // accepts float
-        map.setPaintProperty(lastlayer, key, parseFloat(value));
-        gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", parseFloat("'+value+'") );\n';
+  try {
+      for (var key in paint) {
+        let value = document.querySelector('input[name='+key+']').value;
+        console.log( key + " ==> " + value );
+    
+        // build expression if necessary
+        let expression = null;
+        if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+           var varray = value.split(',');
+        }
+        if ( value == 'true' ) {
+          map.setPaintProperty(lastlayer, key, true);
+          gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", true );\n';
+        }
+        else if ( value == 'false' ) {
+          map.setPaintProperty(lastlayer, key, false);
+          gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", false );\n';
+        }
+        else if ( strstr( key, 'opacity' ) >= 0 ||
+                  strstr( key, 'blur' ) >= 0 ) { // accepts float
+          if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+            // map.setPaintProperty(lastlayer, key, expression);
+          } else { // accepts float
+            map.setPaintProperty(lastlayer, key, parseFloat(value));
+            var nvalue = map.getPaintProperty(lastlayer, key );
+            if ( nvalue != parseFloat(value) ) {
+               throw new Error("Wrong Parameter");
+            }
+            gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", parseFloat("'+value+'") );\n';
+          }
+        } 
+        else if ( strstr(key, 'color' ) >= 0 ) { 
+          if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+            // map.setPaintProperty(lastlayer, key, expression);
+          } else { // accepts string
+            map.setPaintProperty(lastlayer, key, value);
+            var nvalue = map.getPaintProperty(lastlayer, key );
+            if ( nvalue != value ) {
+               throw new Error("Wrong Parameter");
+            }
+            gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
+          }
+        }
+        else if ( strstr(key, 'width' ) >= 0 ) { 
+          if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+            // map.setPaintProperty(lastlayer, key, expression);
+          } else { // accepts int
+            map.setPaintProperty(lastlayer, key, parseInt(value) );
+            var nvalue = map.getPaintProperty(lastlayer, key );
+            if ( nvalue != parseInt(value) ) {
+               throw new Error("Wrong Parameter");
+            }
+            gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", parseInt("'+value+'") );\n';
+          }
+        }
+        else if ( strstr(key, 'dash' ) >= 0 ) { // accepts number array
+          var varray = JSON.parse("[" + value + "]");
+          map.setPaintProperty(lastlayer, key, varray);
+          var nvalue = map.getPaintProperty(lastlayer, key );
+          if ( nvalue != value ) {
+             throw new Error("Wrong Parameter");
+          }
+          gustom += pustom+'var varray = JSON.parse("[' + value + ']");\n';
+          gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", varray );\n';
+        }
+        else { // try anyway to see if it accepts string
+          map.setPaintProperty(lastlayer, key, value);
+          var nvalue = map.getPaintProperty(lastlayer, key );
+          if ( nvalue != value ) {
+             throw new Error("Wrong Parameter");
+          }
+          gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
+        }
       }
-    } 
-    else if ( strstr(key, 'color' ) >= 0 ) { 
-      if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
-        // map.setPaintProperty(lastlayer, key, expression);
-      } else { // accepts string
-        map.setPaintProperty(lastlayer, key, value);
-        gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
-      }
-    }
-    else if ( strstr(key, 'width' ) >= 0 ) { 
-      if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
-        // map.setPaintProperty(lastlayer, key, expression);
-      } else { // accepts int
-        map.setPaintProperty(lastlayer, key, parseInt(value) );
-        gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", parseInt("'+value+'") );\n';
-      }
-    }
-    else if ( strstr(key, 'dash' ) >= 0 ) { // accepts number array
-      var varray = JSON.parse("[" + value + "]");
-      map.setPaintProperty(lastlayer, key, varray);
-      gustom += pustom+'var varray = JSON.parse("[' + value + ']");\n';
-      gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", varray );\n';
-    }
-    else { // try anyway to see if it accepts string
-      map.setPaintProperty(lastlayer, key, value);
-      gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
-    }
+      map.setLayoutProperty(lastlayer, 'visibility', 'visible');
+      gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "visible");\n';
+  } catch (e) {
+    console.error(e);
+    alertify.alert("Couldn't update the Map, Operation Ignored; Try Again " + e);
   }
   document.querySelector('#paintpropes').innerHTML = '';
   document.querySelector('#paintpropes').style.display = 'none';
-  alert(gustom);
+  // alert(gustom);
 }
 
 function setVisible(option) {
 
   console.log("option : " + option.target.value );
   lastlayer = option.target.value;
-  map.setLayoutProperty(option.target.value, 'visibility', 'visible');
-  gustom += pustom+'map.setLayoutProperty("'+option.target.value+'", "visibility", "visible");\n';
   // option 1 : getting the big map style
   let styleJson = map.getStyle();
   // console.log( 'this is the map layers style : ' + JSON.stringify(styleJson.layers) );
