@@ -68,11 +68,6 @@ function applyPropes(e) {
         let value = document.querySelector('input[name='+key+']').value;
         console.log( key + " ==> " + value );
     
-        // build expression if necessary
-        let expression = null;
-        if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
-           var varray = value.split(',');
-        }
         if ( value == 'true' ) {
           map.setPaintProperty(lastlayer, key, true);
           gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", true );\n';
@@ -82,9 +77,42 @@ function applyPropes(e) {
           gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", false );\n';
         }
         else if ( strstr( key, 'opacity' ) >= 0 ||
-                  strstr( key, 'blur' ) >= 0 ) { // accepts float
+                  strstr( key, 'blur' ) >= 0 ||
+                  strstr( key, 'width' ) >= 0 ) { // accepts float
           if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
-            // map.setPaintProperty(lastlayer, key, expression);
+            // build expression if necessary
+            let expression = null;
+            if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+               var varray = value.split(',');
+               if ( varray[1] == 'linear' ) {
+                 var vdata = varray.slice(3);
+                 expression = [
+                   varray[0],
+                   [varray[1]],
+                   [varray[2]],
+                   ...vdata.flatMap((v, i, arr ) =>
+                      (i%2 == 0) ? [ parseFloat(v), parseFloat(arr[i+1]) ] : [] 
+                   )
+                 ];
+               } else if ( varray[1] == 'exponential' ) {
+                 var vdata = varray.slice(4);
+                 expression = [
+                   varray[0],
+                   [varray[1], parseFloat(varray[2])],
+                   [varray[3]],
+                   ...vdata.flatMap((v, i, arr ) =>
+                      (i%2 == 0) ? [ parseFloat(v), parseFloat(arr[i+1]) ] : [] 
+                   )
+                 ];
+               } else {
+                 throw new Error("Unknown Expression");
+               }
+            }
+            map.setPaintProperty(lastlayer, key, expression);
+            var nvalue = map.getPaintProperty(lastlayer, key );
+            if ( nvalue != value ) {
+               throw new Error("Wrong Parameter");
+            }
           } else { // accepts float
             map.setPaintProperty(lastlayer, key, parseFloat(value));
             var nvalue = map.getPaintProperty(lastlayer, key );
@@ -96,7 +124,39 @@ function applyPropes(e) {
         } 
         else if ( strstr(key, 'color' ) >= 0 ) { 
           if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
-            // map.setPaintProperty(lastlayer, key, expression);
+            // build expression if necessary
+            let expression = null;
+            if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+               var varray = value.split(',');
+               if ( varray[1] == 'linear' ) {
+                 var vdata = varray.slice(3);
+                 expression = [
+                   varray[0],
+                   [varray[1]],
+                   [varray[2]],
+                   ...vdata.flatMap((v, i, arr ) =>
+                      (i%2 == 0) ? [ parseFloat(v), arr[i+1] ] : [] 
+                   )
+                 ];
+               } else if ( varray[1] == 'exponential' ) {
+                 var vdata = varray.slice(4);
+                 expression = [
+                   varray[0],
+                   [varray[1], parseFloat(varray[2])],
+                   [varray[3]],
+                   ...vdata.flatMap((v, i, arr ) =>
+                      (i%2 == 0) ? [ parseFloat(v), arr[i+1] ] : [] 
+                   )
+                 ];
+               } else {
+                 throw new Error("Unknown Expression");
+               }
+            }
+            map.setPaintProperty(lastlayer, key, expression);
+            var nvalue = map.getPaintProperty(lastlayer, key );
+            if ( nvalue != value ) {
+               throw new Error("Wrong Parameter");
+            }
           } else { // accepts string
             map.setPaintProperty(lastlayer, key, value);
             var nvalue = map.getPaintProperty(lastlayer, key );
@@ -104,18 +164,6 @@ function applyPropes(e) {
                throw new Error("Wrong Parameter");
             }
             gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
-          }
-        }
-        else if ( strstr(key, 'width' ) >= 0 ) { 
-          if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
-            // map.setPaintProperty(lastlayer, key, expression);
-          } else { // accepts int
-            map.setPaintProperty(lastlayer, key, parseInt(value) );
-            var nvalue = map.getPaintProperty(lastlayer, key );
-            if ( nvalue != parseInt(value) ) {
-               throw new Error("Wrong Parameter");
-            }
-            gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", parseInt("'+value+'") );\n';
           }
         }
         else if ( strstr(key, 'dash' ) >= 0 ) { // accepts number array
