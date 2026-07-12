@@ -1,5 +1,7 @@
 <?php
 
+$SKELETON = 'skeleton.html';
+
 function is_ascii( $string = '' ) {
   return ( bool ) preg_match( '/^[_a-zA-Z0-9-]+$/' , $string );
 }
@@ -23,17 +25,18 @@ function is_ascii( $string = '' ) {
      $gustom = '';
   }
 
+  $templette = file_get_contents ($SKELETON);
+  $templute = str_replace( '// CUSTOM CODE', "// CUSTOM CODE\n".$gustom, $templette );
+  $rsize = file_put_contents($filename, $templute);
+  if ($rsize) {
+    header('HTTP/1.1 200 OK');	  
+    $sdir = str_replace( 'save-map.php', '', $_SERVER['REQUEST_URI'] );
+    print( 'https://'.$_SERVER['SERVER_NAME'].$sdir.$filename );
+    exit(0);
+  } else {
+    header('HTTP/1.1 406 Map could not be saved, check permissions ');
+    exit(-1);
+  }
 
-  // if ( !file_put_contents( "./annotations.json", $annotations ) )
-  // {
-  //    $error = error_get_last();
-  //    header('HTTP/1.1 500 Could not store annotations : '.$error['message']);	  
-  //    exit(-1);
-  // }
-
-  header('HTTP/1.1 200 OK');	  
-  $sdir = str_replace( 'save-map.php', '', $_SERVER['REQUEST_URI'] );
-  print( 'https://'.$_SERVER['SERVER_NAME'].$sdir.$filename );
-  exit(0);
 
 ?>

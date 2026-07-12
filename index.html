@@ -40,7 +40,7 @@ let map = null;
 let paint = null;
 let lastlayer = null;
 let gustom = '';
-let pustom = '                ';
+let pustom = '    ';
 let addXode = '';
 
 var strstr = function (haystack, needle) {
@@ -65,7 +65,9 @@ function postIt(e) {
           gustom : gustom
         }
   ).done( function(location){  
-             alertify.alert('Map saved here : ' + location);
+             alertify.alert('Map saved here : <a target="_blank" href="' + location + '">'+location+'</a><br> \
+                             Use the source code of this page or only the marked CUSTOM CODE in your project.<br/> \
+                             Enjoy and thanks or donations to <a target="_blank" href="https://giss.tv">GISS.tv</a>');
   }).fail( function(xhr, status, error) {
              alertify.alert('Couldn\'t save your map<br/>Error : ' + error);
   });
@@ -97,7 +99,7 @@ function setValue(layer, key, value) {
           map.setPaintProperty(layer, key, true);
       }
       else if ( value == 'false' ) {
-          map.setPaintProperty(lastlayer, key, false);
+          map.setPaintProperty(layer, key, false);
       }
       else if ( strstr( key, 'opacity' ) >= 0 ||
                   strstr( key, 'blur' ) >= 0 ||
@@ -131,14 +133,14 @@ function setValue(layer, key, value) {
                  throw new Error("Unknown Expression");
                }
             }
-            map.setPaintProperty(lastlayer, key, expression);
-            var nvalue = map.getPaintProperty(lastlayer, key );
+            map.setPaintProperty(layer, key, expression);
+            var nvalue = map.getPaintProperty(layer, key );
             if ( nvalue != value ) {
                throw new Error("Wrong Parameter");
             }
           } else { // accepts float
-            map.setPaintProperty(lastlayer, key, parseFloat(value));
-            var nvalue = map.getPaintProperty(lastlayer, key );
+            map.setPaintProperty(layer, key, parseFloat(value));
+            var nvalue = map.getPaintProperty(layer, key );
             if ( nvalue != parseFloat(value) ) {
                throw new Error("Wrong Parameter");
             }
@@ -174,14 +176,14 @@ function setValue(layer, key, value) {
                  throw new Error("Unknown Expression");
                }
             }
-            map.setPaintProperty(lastlayer, key, expression);
-            var nvalue = map.getPaintProperty(lastlayer, key );
+            map.setPaintProperty(layer, key, expression);
+            var nvalue = map.getPaintProperty(layer, key );
             if ( nvalue != value ) {
                throw new Error("Wrong Parameter");
             }
           } else { // accepts string
-            map.setPaintProperty(lastlayer, key, value);
-            var nvalue = map.getPaintProperty(lastlayer, key );
+            map.setPaintProperty(layer, key, value);
+            var nvalue = map.getPaintProperty(layer, key );
             if ( nvalue != value ) {
                throw new Error("Wrong Parameter");
             }
@@ -189,21 +191,21 @@ function setValue(layer, key, value) {
       }
       else if ( strstr(key, 'dash' ) >= 0 ) { // accepts number array
           var varray = JSON.parse("[" + value + "]");
-          map.setPaintProperty(lastlayer, key, varray);
-          var nvalue = map.getPaintProperty(lastlayer, key );
+          map.setPaintProperty(layer, key, varray);
+          var nvalue = map.getPaintProperty(layer, key );
           if ( nvalue != value ) {
              throw new Error("Wrong Parameter");
           }
       }
       else { // try anyway to see if it accepts string
-          map.setPaintProperty(lastlayer, key, value);
-          var nvalue = map.getPaintProperty(lastlayer, key );
+          map.setPaintProperty(layer, key, value);
+          var nvalue = map.getPaintProperty(layer, key );
           if ( nvalue != value ) {
              throw new Error("Wrong Parameter");
           }
       }
-      map.setLayoutProperty(lastlayer, "visibility", "visible");
-      gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "visible");\n';
+      map.setLayoutProperty(layer, "visibility", "visible");
+      gustom += pustom+'map.setLayoutProperty("'+layer+'", "visibility", "visible");\n';
 }
 
 function selectLayer(option) {
@@ -213,7 +215,7 @@ function selectLayer(option) {
 
   // suppress layer first
   map.setLayoutProperty(lastlayer, 'visibility', 'none');
-  gustom += pustom+'   map.setLayoutProperty("'+lastlayer+'", "visibility", "none");\n';
+  gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "none");\n';
 
   // option 1 : getting the big map style
   let styleJson = map.getStyle();

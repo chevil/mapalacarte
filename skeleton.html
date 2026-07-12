@@ -15,22 +15,11 @@
   <style>
     body { margin: 0; padding: 0; }
     #map { width: 100vw; height: 100vh; }
-    #layyours { position: absolute; top: 50px; left: 20px; background: #ae782355; color: #000000; }
-    #paintpropes { position: absolute; z-index: 1000; background: #888888; 
-                   border-radius: 20px; padding: 10px; color: #ffffff; display: none;
-                   height: 150px; width: 350px; bottom: 50px; right: 50px }
-    #save { position: absolute; bottom: 50px; left: 20px }
-    #dosave { background: #ae782355; color: #000000; }
   </style>
 </head>
 <body>
 
 <div id="map"></div>
-<select id="layyours"></select>
-<div id="paintpropes"></div>
-<div id="save">
-<input id="mapname" type="text" cols=40 placeholder="Map Name" />
-<input id="dosave" type="submit" value="Save this Map" />
 </div>
 
 <script>
@@ -53,7 +42,7 @@ function setValue(layer, key, value) {
           map.setPaintProperty(layer, key, true);
       }
       else if ( value == 'false' ) {
-          map.setPaintProperty(lastlayer, key, false);
+          map.setPaintProperty(layer, key, false);
       }
       else if ( strstr( key, 'opacity' ) >= 0 ||
                   strstr( key, 'blur' ) >= 0 ||
@@ -87,14 +76,14 @@ function setValue(layer, key, value) {
                  throw new Error("Unknown Expression");
                }
             }
-            map.setPaintProperty(lastlayer, key, expression);
-            var nvalue = map.getPaintProperty(lastlayer, key );
+            map.setPaintProperty(layer, key, expression);
+            var nvalue = map.getPaintProperty(layer, key );
             if ( nvalue != value ) {
                throw new Error("Wrong Parameter");
             }
           } else { // accepts float
-            map.setPaintProperty(lastlayer, key, parseFloat(value));
-            var nvalue = map.getPaintProperty(lastlayer, key );
+            map.setPaintProperty(layer, key, parseFloat(value));
+            var nvalue = map.getPaintProperty(layer, key );
             if ( nvalue != parseFloat(value) ) {
                throw new Error("Wrong Parameter");
             }
@@ -130,42 +119,40 @@ function setValue(layer, key, value) {
                  throw new Error("Unknown Expression");
                }
             }
-            map.setPaintProperty(lastlayer, key, expression);
-            var nvalue = map.getPaintProperty(lastlayer, key );
+            map.setPaintProperty(layer, key, expression);
+            var nvalue = map.getPaintProperty(layer, key );
             if ( nvalue != value ) {
                throw new Error("Wrong Parameter");
             }
           } else { // accepts string
-            map.setPaintProperty(lastlayer, key, value);
-            var nvalue = map.getPaintProperty(lastlayer, key );
+            map.setPaintProperty(layer, key, value);
+            var nvalue = map.getPaintProperty(layer, key );
             if ( nvalue != value ) {
                throw new Error("Wrong Parameter");
+            } else {
+              console.log( layer + ' color set to ' + value );
             }
           }
       }
       else if ( strstr(key, 'dash' ) >= 0 ) { // accepts number array
           var varray = JSON.parse("[" + value + "]");
-          map.setPaintProperty(lastlayer, key, varray);
-          var nvalue = map.getPaintProperty(lastlayer, key );
+          map.setPaintProperty(layer, key, varray);
+          var nvalue = map.getPaintProperty(layer, key );
           if ( nvalue != value ) {
              throw new Error("Wrong Parameter");
           }
       }
       else { // try anyway to see if it accepts string
-          map.setPaintProperty(lastlayer, key, value);
-          var nvalue = map.getPaintProperty(lastlayer, key );
+          map.setPaintProperty(layer, key, value);
+          var nvalue = map.getPaintProperty(layer, key );
           if ( nvalue != value ) {
              throw new Error("Wrong Parameter");
           }
       }
-      map.setLayoutProperty(lastlayer, "visibility", "visible");
-      gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "visible");\n';
+      map.setLayoutProperty(layer, "visibility", "visible");
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-
-  const dosave = document.getElementById("dosave");
-  dosave.addEventListener('click', postIt);
 
   map = new maplibregl.Map({
     container: 'map',
