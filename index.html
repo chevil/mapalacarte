@@ -196,10 +196,15 @@ function applyPropes(e) {
   // alert(gustom);
 }
 
-function setVisible(option) {
+function selectLayer(option) {
 
   console.log("option : " + option.target.value );
   lastlayer = option.target.value;
+
+  // suppress layer first
+  map.setLayoutProperty(lastlayer, 'visibility', 'none');
+  gustom += pustom+'   map.setLayoutProperty("'+lastlayer+'", "visibility", "none");\n';
+
   // option 1 : getting the big map style
   let styleJson = map.getStyle();
   // console.log( 'this is the map layers style : ' + JSON.stringify(styleJson.layers) );
@@ -286,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
        layyours.options.add(opt);
     }
     map.setLayoutProperty('background', 'visibility', 'visible');
-    layyours.addEventListener('change', setVisible);
+    layyours.addEventListener('change', selectLayer);
     gustom += pustom+'const layers = map.getStyle().layers;\n';
     gustom += pustom+'for (const layer of layers) {\n';
     gustom += pustom+'   map.setLayoutProperty(layer.id, "visibility", "none");\n';
