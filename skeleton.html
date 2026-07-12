@@ -4,16 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Map A La Carte</title>
+
   <link href="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.css" rel="stylesheet">
+  <link href="css/alertify.core.css" rel="stylesheet">
+  <link href="css/alertify.default.css" rel="stylesheet">
+
   <script src="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.js"></script>
+  <script src="js/jquery.js"></script>
+  <script src="js/alertify.min.js"></script>
+
   <style>
     body { margin: 0; padding: 0; }
     #map { width: 100vw; height: 100vh; }
+    #layyours { position: absolute; top: 50px; left: 20px; background: #ae782355; color: #000000; }
+    #paintpropes { position: absolute; z-index: 1000; background: #888888; 
+                   border-radius: 20px; padding: 10px; color: #ffffff; display: none;
+                   height: 150px; width: 350px; bottom: 50px; right: 50px }
+    #save { position: absolute; bottom: 50px; left: 20px }
+    #dosave { background: #ae782355; color: #000000; }
   </style>
 </head>
 <body>
 
 <div id="map"></div>
+<select id="layyours"></select>
+<div id="paintpropes"></div>
+<div id="save">
+<input id="mapname" type="text" cols=40 placeholder="Map Name" />
+<input id="dosave" type="submit" value="Save this Map" />
+</div>
 
 <script>
 
@@ -29,13 +48,131 @@ var strstr = function (haystack, needle) {
   return -1;
 };
 
+function setValue(layer, key, value) {
+
+      if ( value == 'true' ) {
+          map.setPaintProperty(layer, key, true);
+      }
+      else if ( value == 'false' ) {
+          map.setPaintProperty(lastlayer, key, false);
+      }
+      else if ( strstr( key, 'opacity' ) >= 0 ||
+                  strstr( key, 'blur' ) >= 0 ||
+                  strstr( key, 'width' ) >= 0 ) { // accepts float
+          if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+            // build expression if necessary
+            let expression = null;
+            if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+               var varray = value.split(',');
+               if ( varray[1] == 'linear' ) {
+                 var vdata = varray.slice(3);
+                 expression = [
+                   varray[0],
+                   [varray[1]],
+                   [varray[2]],
+                   ...vdata.flatMap((v, i, arr ) =>
+                      (i%2 == 0) ? [ parseFloat(v), parseFloat(arr[i+1]) ] : [] 
+                   )
+                 ];
+               } else if ( varray[1] == 'exponential' ) {
+                 var vdata = varray.slice(4);
+                 expression = [
+                   varray[0],
+                   [varray[1], parseFloat(varray[2])],
+                   [varray[3]],
+                   ...vdata.flatMap((v, i, arr ) =>
+                      (i%2 == 0) ? [ parseFloat(v), parseFloat(arr[i+1]) ] : [] 
+                   )
+                 ];
+               } else {
+                 throw new Error("Unknown Expression");
+               }
+            }
+            map.setPaintProperty(lastlayer, key, expression);
+            var nvalue = map.getPaintProperty(lastlayer, key );
+            if ( nvalue != value ) {
+               throw new Error("Wrong Parameter");
+            }
+          } else { // accepts float
+            map.setPaintProperty(lastlayer, key, parseFloat(value));
+            var nvalue = map.getPaintProperty(lastlayer, key );
+            if ( nvalue != parseFloat(value) ) {
+               throw new Error("Wrong Parameter");
+            }
+          }
+      } 
+      else if ( strstr(key, 'color' ) >= 0 ) { 
+          if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+            // build expression if necessary
+            let expression = null;
+            if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
+               var varray = value.split(',');
+               if ( varray[1] == 'linear' ) {
+                 var vdata = varray.slice(3);
+                 expression = [
+                   varray[0],
+                   [varray[1]],
+                   [varray[2]],
+                   ...vdata.flatMap((v, i, arr ) =>
+                      (i%2 == 0) ? [ parseFloat(v), arr[i+1] ] : [] 
+                   )
+                 ];
+               } else if ( varray[1] == 'exponential' ) {
+                 var vdata = varray.slice(4);
+                 expression = [
+                   varray[0],
+                   [varray[1], parseFloat(varray[2])],
+                   [varray[3]],
+                   ...vdata.flatMap((v, i, arr ) =>
+                      (i%2 == 0) ? [ parseFloat(v), arr[i+1] ] : [] 
+                   )
+                 ];
+               } else {
+                 throw new Error("Unknown Expression");
+               }
+            }
+            map.setPaintProperty(lastlayer, key, expression);
+            var nvalue = map.getPaintProperty(lastlayer, key );
+            if ( nvalue != value ) {
+               throw new Error("Wrong Parameter");
+            }
+          } else { // accepts string
+            map.setPaintProperty(lastlayer, key, value);
+            var nvalue = map.getPaintProperty(lastlayer, key );
+            if ( nvalue != value ) {
+               throw new Error("Wrong Parameter");
+            }
+          }
+      }
+      else if ( strstr(key, 'dash' ) >= 0 ) { // accepts number array
+          var varray = JSON.parse("[" + value + "]");
+          map.setPaintProperty(lastlayer, key, varray);
+          var nvalue = map.getPaintProperty(lastlayer, key );
+          if ( nvalue != value ) {
+             throw new Error("Wrong Parameter");
+          }
+      }
+      else { // try anyway to see if it accepts string
+          map.setPaintProperty(lastlayer, key, value);
+          var nvalue = map.getPaintProperty(lastlayer, key );
+          if ( nvalue != value ) {
+             throw new Error("Wrong Parameter");
+          }
+      }
+      map.setLayoutProperty(lastlayer, "visibility", "visible");
+      gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "visible");\n';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+
+  const dosave = document.getElementById("dosave");
+  dosave.addEventListener('click', postIt);
 
   map = new maplibregl.Map({
     container: 'map',
     style: 'https://tiles.openfreemap.org/styles/liberty',
     center: [2.1686, 41.3874],
-    zoom: 10
+    zoom: 4
   });
 
   // Add navigation controls (zoom, compass)
@@ -43,10 +180,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Restyle layers once the map is loaded
   map.on('load', () => {
-    const layers = map.getStyle().layers;
-    console.log('end of onload');
 
-    //  GUSTOM_CODE 
+    // Example: dark water
+    // map.setPaintProperty('water', 'fill-color', '#871625');
+    // map.setPaintProperty('water', 'fill-color', '#19e518');
+    // map.setPaintProperty('background', 'fill-color', '#ffa500');
+
+    // Example: blue woods
+    // map.setPaintProperty('landcover_wood', 'fill-color', '#1a1aff');
+    // map.setPaintProperty('park', 'fill-color', '#1a1a00');
+    // map.setPaintProperty('road_motorway', 'paint-color', '#ff0000');
+
+    // Example: others
+    // map.setPaintProperty('road_minor', 'fill-color', '#ff1a00');
+    // map.setPaintProperty('road_motorway', 'fill-color', '#ff1a00');
+
+    // Example: hide buildings
+    // map.setLayoutProperty('building', 'visibility', 'none');
+    // map.setLayoutProperty('building-3d', 'visibility', 'none');
+
+    // CUSTOM CODE
 
   });
 

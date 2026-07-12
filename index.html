@@ -41,6 +41,7 @@ let paint = null;
 let lastlayer = null;
 let gustom = '';
 let pustom = '                ';
+let addXode = '';
 
 var strstr = function (haystack, needle) {
   if (needle.length === 0) return -1;
@@ -53,7 +54,6 @@ var strstr = function (haystack, needle) {
 };
 
 function postIt(e) {
-  console.log( "don't click me, i'm sleeping" );
   const mapname = document.getElementById( "mapname");
   if ( mapname.value == '' || mapname.value == null ) {
      alertify.alert( "Please, fill in the Map Name" );
@@ -67,16 +67,29 @@ function applyPropes(e) {
       for (var key in paint) {
         let value = document.querySelector('input[name='+key+']').value;
         console.log( key + " ==> " + value );
+        addXode += pustom+'setValue("'+lastlayer+'", "'+key+'", "'+value+'" );\n';
+        setValue(lastlayer,key,value);
+        gustom += addXode;
+      }
+
+  } catch (e) {
+    console.error(e);
+    alertify.alert("Couldn't update the Map, Operation Ignored; Try Again " + e);
+  }
+  document.querySelector('#paintpropes').innerHTML = '';
+  document.querySelector('#paintpropes').style.display = 'none';
+  // alert(gustom);
+}
     
-        if ( value == 'true' ) {
-          map.setPaintProperty(lastlayer, key, true);
-          gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", true );\n';
-        }
-        else if ( value == 'false' ) {
+function setValue(layer, key, value) {
+
+      if ( value == 'true' ) {
+          map.setPaintProperty(layer, key, true);
+      }
+      else if ( value == 'false' ) {
           map.setPaintProperty(lastlayer, key, false);
-          gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", false );\n';
-        }
-        else if ( strstr( key, 'opacity' ) >= 0 ||
+      }
+      else if ( strstr( key, 'opacity' ) >= 0 ||
                   strstr( key, 'blur' ) >= 0 ||
                   strstr( key, 'width' ) >= 0 ) { // accepts float
           if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
@@ -119,10 +132,9 @@ function applyPropes(e) {
             if ( nvalue != parseFloat(value) ) {
                throw new Error("Wrong Parameter");
             }
-            gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", parseFloat("'+value+'") );\n';
           }
-        } 
-        else if ( strstr(key, 'color' ) >= 0 ) { 
+      } 
+      else if ( strstr(key, 'color' ) >= 0 ) { 
           if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
             // build expression if necessary
             let expression = null;
@@ -163,37 +175,25 @@ function applyPropes(e) {
             if ( nvalue != value ) {
                throw new Error("Wrong Parameter");
             }
-            gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
           }
-        }
-        else if ( strstr(key, 'dash' ) >= 0 ) { // accepts number array
+      }
+      else if ( strstr(key, 'dash' ) >= 0 ) { // accepts number array
           var varray = JSON.parse("[" + value + "]");
           map.setPaintProperty(lastlayer, key, varray);
           var nvalue = map.getPaintProperty(lastlayer, key );
           if ( nvalue != value ) {
              throw new Error("Wrong Parameter");
           }
-          gustom += pustom+'var varray = JSON.parse("[' + value + ']");\n';
-          gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", varray );\n';
-        }
-        else { // try anyway to see if it accepts string
+      }
+      else { // try anyway to see if it accepts string
           map.setPaintProperty(lastlayer, key, value);
           var nvalue = map.getPaintProperty(lastlayer, key );
           if ( nvalue != value ) {
              throw new Error("Wrong Parameter");
           }
-          gustom += pustom+'map.setPaintProperty("'+lastlayer+'", "'+key+'", "'+value+'");\n';
-        }
       }
-      map.setLayoutProperty(lastlayer, 'visibility', 'visible');
+      map.setLayoutProperty(lastlayer, "visibility", "visible");
       gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "visible");\n';
-  } catch (e) {
-    console.error(e);
-    alertify.alert("Couldn't update the Map, Operation Ignored; Try Again " + e);
-  }
-  document.querySelector('#paintpropes').innerHTML = '';
-  document.querySelector('#paintpropes').style.display = 'none';
-  // alert(gustom);
 }
 
 function selectLayer(option) {
