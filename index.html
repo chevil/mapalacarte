@@ -10,7 +10,7 @@
   <link href="css/alertify.default.css" rel="stylesheet">
 
   <script src="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.js"></script>
-  <script src="js/jquery.js"></script>
+  <script src="js/jquery-3.7.1.js"></script>
   <script src="js/alertify.min.js"></script>
 
   <style>
@@ -59,6 +59,16 @@ function postIt(e) {
      alertify.alert( "Please, fill in the Map Name" );
      return false;
   }
+  $.post('save-map.php', 
+        {
+          name: mapname.value,
+          gustom : gustom
+        }
+  ).done( function(location){  
+             alertify.alert('Map saved here : ' + location);
+  }).fail( function(xhr, status, error) {
+             alertify.alert('Couldn\'t save your map<br/>Error : ' + error);
+  });
 }
 
 function applyPropes(e) {
