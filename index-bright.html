@@ -17,6 +17,7 @@
     body { margin: 0; padding: 0; }
     #map { width: 100vw; height: 100vh; }
     #layyours { position: absolute; top: 50px; left: 20px; background: #ae782355; color: #000000; }
+    #themes { position: absolute; top: 10px; left: 20px; background: #ae782355; color: #000000; }
     #paintpropes { position: absolute; z-index: 1000; background: #888888; 
                    border-radius: 20px; padding: 10px; color: #ffffff; display: none;
                    height: 150px; width: 350px; bottom: 50px; right: 50px }
@@ -33,6 +34,14 @@
 <input id="mapname" type="text" cols=40 placeholder="Map Name" />
 <input id="dosave" type="submit" value="Save this Map" />
 </div>
+<div id="themes">
+    <input id="liberty" type="radio" name="ctheme" value="liberty">
+    <label for="liberty">Liberty</label>
+    <input id="bright" type="radio" name="ctheme" value="bright" checked="checked">
+    <label for="bright">Bright</label>
+    <input id="positron" type="radio" name="ctheme" value="positron">
+    <label for="positron">Positron</label>
+</div>
 
 <script>
 
@@ -42,6 +51,7 @@ let lastlayer = null;
 let gustom = '';
 let pustom = '    ';
 let addXode = '';
+let gtheme = 'bright';
 
 var strstr = function (haystack, needle) {
   if (needle.length === 0) return -1;
@@ -62,7 +72,8 @@ function postIt(e) {
   $.post('save-map.php', 
         {
           name: mapname.value,
-          gustom : gustom
+          gustom : gustom,
+          theme : gtheme
         }
   ).done( function(location){  
              alertify.alert('Map saved here : <a target="_blank" href="' + location + '">'+location+'</a><br> \
@@ -79,7 +90,7 @@ function applyPropes(e) {
       for (var key in paint) {
         let value = document.querySelector('input[name='+key+']').value;
         console.log( key + " ==> " + value );
-        addXode += pustom+'setValue("'+lastlayer+'", "'+key+'", "'+value+'" );\n';
+        addXode = pustom+'setValue("'+lastlayer+'", "'+key+'", "'+value+'" );\n';
         setValue(lastlayer,key,value);
         gustom += addXode;
       }
@@ -235,7 +246,7 @@ function selectLayer(option) {
        temele += '<tr><td>'+key+'</td>';
        temele += '<td><input type=text value="'+paint[key]+'" name="'+key+'"></input></td></tr>';
   }
-  temele += '<tr><td colspan=2 align=center><input type=submit value="Change"></input></td></tr>';
+  temele += '<tr><td colspan=2 align=center><input type=submit value="Set"></input></td></tr>';
   temele += '</table></form>';
   document.querySelector('#paintpropes').innerHTML = temele;
   document.querySelector('#paintpropes').style.display = 'block';
@@ -254,9 +265,33 @@ document.addEventListener('DOMContentLoaded', function() {
   const dosave = document.getElementById("dosave");
   dosave.addEventListener('click', postIt);
 
+  // arm theme chooser
+  const themeList = document.getElementById('themes');
+  const themes = themeList.getElementsByTagName('input');
+  for (const theme of themes) {
+     theme.onclick = (theme) => {
+         // hide all layers
+         updateLayers();
+         gustom = '';
+         gtheme = theme.target.id;
+         console.log( 'Theme set to :' + gtheme );
+         createMap();
+     };
+  }
+
+  createMap();
+
+});
+
+function createMap() {
+
+  console.log('create map');
+
+  $("#map").innerHTML = "";
+
   map = new maplibregl.Map({
     container: 'map',
-    style: 'https://tiles.openfreemap.org/styles/bright',
+    style: 'https://tiles.openfreemap.org/styles/'+gtheme,
     center: [2.1686, 41.3874],
     zoom: 4
   });
@@ -264,39 +299,22 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add navigation controls (zoom, compass)
   map.addControl(new maplibregl.NavigationControl());
 
-  // Restyle layers once the map is loaded
+  // Hide layers once the map is loaded
   map.on('load', () => {
+    console.log('onload');
+    updateLayers();
+  });
 
-    // Example: dark water
-    // map.setPaintProperty('water', 'fill-color', '#871625');
-    // map.setPaintProperty('water', 'fill-color', '#19e518');
-    // map.setPaintProperty('background', 'fill-color', '#ffa500');
+}
 
-    // Example: blue woods
-    // map.setPaintProperty('landcover_wood', 'fill-color', '#1a1aff');
-    // map.setPaintProperty('park', 'fill-color', '#1a1a00');
-    // map.setPaintProperty('road_motorway', 'paint-color', '#ff0000');
-
-    // Example: others
-    // map.setPaintProperty('road_minor', 'fill-color', '#ff1a00');
-    // map.setPaintProperty('road_motorway', 'fill-color', '#ff1a00');
-
-    // Example: hide buildings
-    // map.setLayoutProperty('building', 'visibility', 'none');
-    // map.setLayoutProperty('building-3d', 'visibility', 'none');
-
-    // Add a marker
-    new maplibregl.Marker({ color: '#ff4444' })
-      .setLngLat([2.1686, 41.3874])
-      .setPopup(new maplibregl.Popup().setHTML('<b>Centre Del Mon</b>'))
-      .addTo(map);
+function updateLayers() {
 
     const layers = map.getStyle().layers;
-    console.log('end of onload');
     const layyours = document.getElementById("layyours");
+    $("#layyours").empty();
     for (const layer of layers) {
        map.setLayoutProperty(layer.id, 'visibility', 'none');
-       console.log(layer.id );
+       // console.log(layer.id );
        var opt = document.createElement("option"); 
        opt.text = layer.id;
        opt.value = layer.id
@@ -308,11 +326,11 @@ document.addEventListener('DOMContentLoaded', function() {
     gustom += pustom+'for (const layer of layers) {\n';
     gustom += pustom+'   map.setLayoutProperty(layer.id, "visibility", "none");\n';
     gustom += pustom+'}\n';
+    gustom += pustom+'map.setLayoutProperty("background", "visibility", "visible");\n';
     // console.log(layers);
     // console.log(layers.map(l => l.id));
-  });
+}
 
-});
 </script>
 
 </body>
