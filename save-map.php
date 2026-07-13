@@ -12,6 +12,13 @@ function is_ascii( $string = '' ) {
      exit(-1);
   }
 
+  if ( empty($_POST['theme']) )
+  {
+     header('HTTP/1.1 406 Map Theme is Mandatory');	  
+     exit(-1);
+  }
+  $theme = $_POST['theme'];
+
   if ( !is_ascii($_POST['name']) )
   {
      header('HTTP/1.1 406 Map Name should not contains non-ASCII characters');
@@ -27,7 +34,9 @@ function is_ascii( $string = '' ) {
 
   $templette = file_get_contents ($SKELETON);
   $templute = str_replace( '// CUSTOM CODE', "// CUSTOM CODE\n".$gustom, $templette );
-  $rsize = file_put_contents($filename, $templute);
+  $tempflute = str_replace( 'THEME', $theme, $templute );
+  $rsize = file_put_contents($filename, $tempflute);
+
   if ($rsize) {
     header('HTTP/1.1 200 OK');	  
     $sdir = str_replace( 'save-map.php', '', $_SERVER['REQUEST_URI'] );

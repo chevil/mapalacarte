@@ -10,20 +10,38 @@
   <link href="css/alertify.default.css" rel="stylesheet">
 
   <script src="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.js"></script>
+  <script src="js/jquery-3.7.1.js"></script>
   <script src="js/alertify.min.js"></script>
 
   <style>
     body { margin: 0; padding: 0; }
     #map { width: 100vw; height: 100vh; }
+    #layyours { position: absolute; top: 50px; left: 20px; background: #ae782355; color: #000000; }
+    #paintpropes { position: absolute; z-index: 1000; background: #888888; 
+                   border-radius: 20px; padding: 10px; color: #ffffff; display: none;
+                   height: 150px; width: 350px; bottom: 50px; right: 50px }
+    #save { position: absolute; bottom: 50px; left: 20px }
+    #dosave { background: #ae782355; color: #000000; }
   </style>
 </head>
 <body>
 
 <div id="map"></div>
+<select id="layyours"></select>
+<div id="paintpropes"></div>
+<div id="save">
+<input id="mapname" type="text" cols=40 placeholder="Map Name" />
+<input id="dosave" type="submit" value="Save this Map" />
+</div>
 
 <script>
 
 let map = null;
+let paint = null;
+let lastlayer = null;
+let gustom = '';
+let pustom = '    ';
+let addXode = '';
 
 var strstr = function (haystack, needle) {
   if (needle.length === 0) return -1;
@@ -35,6 +53,46 @@ var strstr = function (haystack, needle) {
   return -1;
 };
 
+function postIt(e) {
+  const mapname = document.getElementById( "mapname");
+  if ( mapname.value == '' || mapname.value == null ) {
+     alertify.alert( "Please, fill in the Map Name" );
+     return false;
+  }
+  $.post('save-map.php', 
+        {
+          name: mapname.value,
+          gustom : gustom
+        }
+  ).done( function(location){  
+             alertify.alert('Map saved here : <a target="_blank" href="' + location + '">'+location+'</a><br> \
+                             Use the source code of this page or only the marked CUSTOM CODE in your project.<br/> \
+                             Enjoy and thanks or donations to <a target="_blank" href="https://giss.tv">GISS.tv</a>');
+  }).fail( function(xhr, status, error) {
+             alertify.alert('Couldn\'t save your map<br/>Error : ' + error);
+  });
+}
+
+function applyPropes(e) {
+
+  try {
+      for (var key in paint) {
+        let value = document.querySelector('input[name='+key+']').value;
+        console.log( key + " ==> " + value );
+        addXode += pustom+'setValue("'+lastlayer+'", "'+key+'", "'+value+'" );\n';
+        setValue(lastlayer,key,value);
+        gustom += addXode;
+      }
+
+  } catch (e) {
+    console.error(e);
+    alertify.alert("Couldn't update the Map, Operation Ignored; Try Again " + e);
+  }
+  document.querySelector('#paintpropes').innerHTML = '';
+  document.querySelector('#paintpropes').style.display = 'none';
+  // alert(gustom);
+}
+    
 function setValue(layer, key, value) {
 
       if ( value == 'true' ) {
@@ -128,8 +186,6 @@ function setValue(layer, key, value) {
             var nvalue = map.getPaintProperty(layer, key );
             if ( nvalue != value ) {
                throw new Error("Wrong Parameter");
-            } else {
-              console.log( layer + ' color set to ' + value );
             }
           }
       }
@@ -149,13 +205,58 @@ function setValue(layer, key, value) {
           }
       }
       map.setLayoutProperty(layer, "visibility", "visible");
+      gustom += pustom+'map.setLayoutProperty("'+layer+'", "visibility", "visible");\n';
+}
+
+function selectLayer(option) {
+
+  console.log("option : " + option.target.value );
+  lastlayer = option.target.value;
+
+  // suppress layer first
+  map.setLayoutProperty(lastlayer, 'visibility', 'none');
+  gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "none");\n';
+
+  // option 1 : getting the big map style
+  let styleJson = map.getStyle();
+  // console.log( 'this is the map layers style : ' + JSON.stringify(styleJson.layers) );
+  let layers = styleJson.layers;
+  for (layer in layers ) {
+    // console.log( 'another heavy layer : ' + JSON.stringify(layers[layer].id));
+    if ( layers[layer].id.toString() == option.target.value.toString() ) {
+       paint = layers[layer].paint;
+    }
+  }
+  console.log( 'here is the paint : ' + JSON.stringify(paint) );
+
+  let temele = '<center>'+lastlayer+'</center>';
+  temele += '<form onsubmit="applyPropes(); return false;" id="propresForm"><table width=100%>';
+  for (var key in paint) {
+       temele += '<tr><td>'+key+'</td>';
+       temele += '<td><input type=text value="'+paint[key]+'" name="'+key+'"></input></td></tr>';
+  }
+  temele += '<tr><td colspan=2 align=center><input type=submit value="Change"></input></td></tr>';
+  temele += '</table></form>';
+  document.querySelector('#paintpropes').innerHTML = temele;
+  document.querySelector('#paintpropes').style.display = 'block';
+
+  // option 2 : getting the layer style, but it returns undefined
+  // let layer = map.getLayer(option);
+  // console.log( 'this is the layer : ' + JSON.stringify(layer) );
+  // let paint = layer.getPaintAffectingGlobalStateRefs(); 
+  // console.log( 'this is the layer paint : ' + JSON.stringify(paint) );
+
+  return false;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
 
+  const dosave = document.getElementById("dosave");
+  dosave.addEventListener('click', postIt);
+
   map = new maplibregl.Map({
     container: 'map',
-    style: 'https://tiles.openfreemap.org/styles/THEME',
+    style: 'https://tiles.openfreemap.org/styles/positron',
     center: [2.1686, 41.3874],
     zoom: 4
   });
@@ -184,8 +285,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // map.setLayoutProperty('building', 'visibility', 'none');
     // map.setLayoutProperty('building-3d', 'visibility', 'none');
 
-    // CUSTOM CODE
+    // Add a marker
+    new maplibregl.Marker({ color: '#ff4444' })
+      .setLngLat([2.1686, 41.3874])
+      .setPopup(new maplibregl.Popup().setHTML('<b>Centre Del Mon</b>'))
+      .addTo(map);
 
+    const layers = map.getStyle().layers;
+    console.log('end of onload');
+    const layyours = document.getElementById("layyours");
+    for (const layer of layers) {
+       map.setLayoutProperty(layer.id, 'visibility', 'none');
+       console.log(layer.id );
+       var opt = document.createElement("option"); 
+       opt.text = layer.id;
+       opt.value = layer.id
+       layyours.options.add(opt);
+    }
+    map.setLayoutProperty('background', 'visibility', 'visible');
+    layyours.addEventListener('change', selectLayer);
+    gustom += pustom+'const layers = map.getStyle().layers;\n';
+    gustom += pustom+'for (const layer of layers) {\n';
+    gustom += pustom+'   map.setLayoutProperty(layer.id, "visibility", "none");\n';
+    gustom += pustom+'}\n';
+    // console.log(layers);
+    // console.log(layers.map(l => l.id));
   });
 
 });
