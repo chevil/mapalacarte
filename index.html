@@ -125,6 +125,10 @@ function applyPropes(e) {
         gustom += addXode;
       }
 
+      // layer modified, set visible
+      map.setLayoutProperty(layer, "visibility", "visible");
+      gustom += pustom+'map.setLayoutProperty("'+layer+'", "visibility", "visible");\n';
+
   } catch (e) {
     console.error(e);
     alertify.alert("Couldn't update the Map, Operation Ignored; Try Again " + e);
@@ -245,8 +249,6 @@ function setValue(layer, key, value) {
              throw new Error("Wrong Parameter");
           }
       }
-      map.setLayoutProperty(layer, "visibility", "visible");
-      gustom += pustom+'map.setLayoutProperty("'+layer+'", "visibility", "visible");\n';
 }
 
 function selectLayer(option) {
