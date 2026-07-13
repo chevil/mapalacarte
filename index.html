@@ -51,7 +51,7 @@ let lastlayer = null;
 let gustom = '';
 let pustom = '    ';
 let addXode = '';
-let theme = 'liberty';
+let gtheme = 'liberty';
 
 var strstr = function (haystack, needle) {
   if (needle.length === 0) return -1;
@@ -73,7 +73,7 @@ function postIt(e) {
         {
           name: mapname.value,
           gustom : gustom,
-          theme : theme
+          theme : gtheme
         }
   ).done( function(location){  
              alertify.alert('Map saved here : <a target="_blank" href="' + location + '">'+location+'</a><br> \
@@ -273,8 +273,8 @@ document.addEventListener('DOMContentLoaded', function() {
          // hide all layers
          updateLayers();
          gustom = '';
-         theme = theme.target.id;
-         console.log( 'Theme set to :' + theme );
+         gtheme = theme.target.id;
+         console.log( 'Theme set to :' + gtheme );
          createMap();
      };
   }
@@ -291,7 +291,7 @@ function createMap() {
 
   map = new maplibregl.Map({
     container: 'map',
-    style: 'https://tiles.openfreemap.org/styles/'+theme,
+    style: 'https://tiles.openfreemap.org/styles/'+gtheme,
     center: [2.1686, 41.3874],
     zoom: 4
   });
