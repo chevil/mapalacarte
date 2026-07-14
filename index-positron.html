@@ -125,8 +125,8 @@ function applyPropes(e) {
         gustom += addXode;
       }
 
-      map.setLayoutProperty(layer, "visibility", "visible");
-      gustom += pustom+'map.setLayoutProperty("'+layer+'", "visibility", "visible");\n';
+      map.setLayoutProperty(lastlayer, "visibility", "visible");
+      gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "visible");\n';
 
   } catch (e) {
     console.error(e);

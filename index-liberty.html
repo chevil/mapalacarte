@@ -126,8 +126,8 @@ function applyPropes(e) {
       }
 
       // layer modified, set visible
-      map.setLayoutProperty(layer, "visibility", "visible");
-      gustom += pustom+'map.setLayoutProperty("'+layer+'", "visibility", "visible");\n';
+      map.setLayoutProperty(lastlayer, "visibility", "visible");
+      gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "visible");\n';
 
   } catch (e) {
     console.error(e);
@@ -353,7 +353,7 @@ function updateLayers() {
     $("#layyours").empty();
     for (const layer of layers) {
        map.setLayoutProperty(layer.id, 'visibility', 'none');
-       // console.log(layer.id );
+       console.log(layer.id );
        var opt = document.createElement("option"); 
        opt.text = layer.id;
        opt.value = layer.id
