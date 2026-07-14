@@ -8,6 +8,7 @@
   <link href="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.css" rel="stylesheet">
   <link href="css/alertify.core.css" rel="stylesheet">
   <link href="css/alertify.default.css" rel="stylesheet">
+  <link href="css/font-awesome.min.css" rel="stylesheet"/>
 
   <script src="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.js"></script>
   <script src="js/jquery-3.7.1.js"></script>
@@ -22,6 +23,8 @@
                    border-radius: 20px; padding: 10px; color: #ffffff; display: none;
                    height: 150px; width: 350px; bottom: 50px; right: 50px }
     #save { position: absolute; bottom: 50px; left: 20px }
+    #the-close { float: right; }
+    #the-help { position: absolute; top: 10px; right: 50px }
     #dosave { background: #ae782355; color: #000000; }
 
     .modal {
@@ -33,11 +36,9 @@
       width: 100%; /* Full width */
       height: 100%; /* Full height */
       overflow: auto; /* Enable scroll if needed */
-      background-color: rgb(0,0,0); /* Fallback color */
       background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
     }
     
-    /* Modal Content/Box */
     .modal-content {
       background-color: #fefefe;
       margin: 15% auto; /* 15% from the top and centered */
@@ -71,6 +72,30 @@
     <p>Loading map...</p>
   </div>
 </div>
+<div class="modal" id="modal-help">
+    <div class="modal-content">
+      <div id="the-close">
+         <i class="fa fa-times"></i>
+      </div>
+      <center><h4>Help</h4></center>
+      <font size=-1>
+      This is a tool to create your own map, in the traditional sense of the term, but not with tiles, mas bien with layers rendered in WebGL using the code of the <a href='https://maplibre.org/' target=_blank>MapLibre GL JS</a> project.<br/><br/>
+      You have 3 basic themes here, provided by Map Libre GL, and when you load the page, one theme is already selected for you. You can change the theme you want to work with by clicking the radio theme box.<br/><br/>
+      In the selection menu below, you have the list of layers of the theme you chose, it is different for each theme provided. When loading a theme, all the layers are hidden by default.<br/><br/>
+      When you select a layer, a window opens with all the CSS-like parameters of that layer that you can set for this layer. You can set the values as you like and click on 'Set' and your layer should appear with the values that you have set.<br/><br/>
+      If you set wrong parameters, do not worry as your values will not be considered and you should try again.<br/><br/>
+      If you don't see your layer, remember that some layers are only visible at certain zoom values, so try to zoom in and out to make them appear.<br/><br/>
+      Common layers you should set to see your map are things like : water, park, label_city, boundary_2 (frontiers), ...<br/><br/>
+      Don't get intimated with parameters starting with 'interpolate, ...', it usually means the value is changing according to the zoom, but you can enter a simple value as well.<br/><br/>
+      Once all the layers you wish are configured, you can save your map, and you will be pointed to a simple version of your map to start your project with.<br/><br/>
+      Enjoy and thanks or/and donations to <a href='https://giss.tv' target=_blank>GISS.tv</a>.
+      </font>
+    </div>
+  </div>
+</div>
+<div id="the-help">
+   <i id="help" class="fa fa-question-circle fa-2x" aria-hidden="true" ></i>
+</div>
 
 <script>
 
@@ -82,6 +107,7 @@ let pustom = '    ';
 let addXode = '';
 let gtheme = 'bright';
 let loading = null;
+let modhelp = null;
 
 var strstr = function (haystack, needle) {
   if (needle.length === 0) return -1;
@@ -125,6 +151,7 @@ function applyPropes(e) {
         gustom += addXode;
       }
 
+      // layer modified, set visible
       map.setLayoutProperty(lastlayer, "visibility", "visible");
       gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "visible");\n';
 
@@ -294,6 +321,7 @@ function selectLayer(option) {
 document.addEventListener('DOMContentLoaded', function() {
 
   loading = document.getElementById("loading");
+  modhelp = document.getElementById("modal-help");
   const dosave = document.getElementById("dosave");
   dosave.addEventListener('click', postIt);
 
@@ -309,6 +337,15 @@ document.addEventListener('DOMContentLoaded', function() {
          createMap();
      };
   }
+
+  // help yourself
+  $('#help').on('click', function() {
+     modhelp.style.display='block';;
+  });
+  $('#the-close').on('click', function() {
+     modhelp.style.display='none';;
+  });
+
 
   createMap();
 
@@ -352,7 +389,7 @@ function updateLayers() {
     $("#layyours").empty();
     for (const layer of layers) {
        map.setLayoutProperty(layer.id, 'visibility', 'none');
-       // console.log(layer.id );
+       console.log(layer.id );
        var opt = document.createElement("option"); 
        opt.text = layer.id;
        opt.value = layer.id
