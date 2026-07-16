@@ -277,10 +277,16 @@ function setValue(layer, key, value) {
       }
 }
 
-function selectLayer(option) {
+function selectLayer(event) {
 
-  console.log("option : " + option.target.value );
-  lastlayer = option.target.value;
+  console.log("option : " + event.target.value );
+  lastlayer = event.target.value;
+  
+  setLastLayer();
+
+}
+
+function setLastLayer() {
 
   // suppress layer first
   map.setLayoutProperty(lastlayer, 'visibility', 'none');
@@ -292,7 +298,7 @@ function selectLayer(option) {
   let layers = styleJson.layers;
   for (layer in layers ) {
     // console.log( 'another heavy layer : ' + JSON.stringify(layers[layer].id));
-    if ( layers[layer].id.toString() == option.target.value.toString() ) {
+    if ( layers[layer].id.toString() == lastlayer.toString() ) {
        paint = layers[layer].paint;
     }
   }
@@ -310,7 +316,7 @@ function selectLayer(option) {
   document.querySelector('#paintpropes').style.display = 'block';
 
   // option 2 : getting the layer style, but it returns undefined
-  // let layer = map.getLayer(option);
+  // let layer = map.getLayer(lastlayer);
   // console.log( 'this is the layer : ' + JSON.stringify(layer) );
   // let paint = layer.getPaintAffectingGlobalStateRefs(); 
   // console.log( 'this is the layer paint : ' + JSON.stringify(paint) );
@@ -378,6 +384,8 @@ function createMap() {
     console.log('onload');
     updateLayers();
     loading.style.display = "none";
+    lastlayer = 'background';
+    setLastLayer();
   });
 
 }
@@ -395,13 +403,11 @@ function updateLayers() {
        opt.value = layer.id
        layyours.options.add(opt);
     }
-    map.setLayoutProperty('background', 'visibility', 'visible');
     layyours.addEventListener('change', selectLayer);
     gustom += pustom+'const layers = map.getStyle().layers;\n';
     gustom += pustom+'for (const layer of layers) {\n';
     gustom += pustom+'   map.setLayoutProperty(layer.id, "visibility", "none");\n';
     gustom += pustom+'}\n';
-    gustom += pustom+'map.setLayoutProperty("background", "visibility", "visible");\n';
     // console.log(layers);
     // console.log(layers.map(l => l.id));
 }

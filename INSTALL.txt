@@ -1,0 +1,11 @@
+
+Go to your web server directory
+and :
+
+git clone https://github.com/chevil/mapalacarte.git
+
+Give writing permissons in that directory :
+
+chmod -R 755 mapalacarte
+
+Enjoy and thanks/donations to GISS.tv : https://giss.tv
