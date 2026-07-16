@@ -24,6 +24,7 @@
                    height: 150px; width: 350px; bottom: 50px; right: 50px }
     #save { position: absolute; bottom: 50px; left: 20px }
     #the-close { float: right; }
+    #zoom { position: absolute; top: 100px; right: 10px; height: 20px; width: 100px; font-size: 14px; text-align: right;}
     #the-help { position: absolute; top: 10px; right: 50px }
     #dosave { background: #ae782355; color: #000000; }
 
@@ -62,6 +63,7 @@
 </div>
 <select id="layyours"></select>
 <div id="paintpropes"></div>
+<div id="zoom"></div>
 <div id="save">
 <input id="mapname" type="text" cols=40 placeholder="Map Name" />
 <input id="dosave" type="submit" value="Save this Map" />
@@ -138,6 +140,11 @@ function postIt(e) {
   }).fail( function(xhr, status, error) {
              alertify.alert('Couldn\'t save your map<br/>Error : ' + error);
   });
+}
+
+function getZoom(e) {
+  console.log("Zoom : " + (Math.round(map.getZoom() * 100) / 100).toFixed(2) );
+  document.querySelector('#zoom').innerHTML = "Zoom : " + (Math.round(map.getZoom() * 100) / 100).toFixed(2);
 }
 
 function applyPropes(e) {
@@ -277,10 +284,16 @@ function setValue(layer, key, value) {
       }
 }
 
-function selectLayer(option) {
+function selectLayer(event) {
 
-  console.log("option : " + option.target.value );
-  lastlayer = option.target.value;
+  console.log("option : " + event.target.value );
+  lastlayer = event.target.value;
+  
+  setLastLayer();
+
+}
+
+function setLastLayer() {
 
   // suppress layer first
   map.setLayoutProperty(lastlayer, 'visibility', 'none');
@@ -292,7 +305,7 @@ function selectLayer(option) {
   let layers = styleJson.layers;
   for (layer in layers ) {
     // console.log( 'another heavy layer : ' + JSON.stringify(layers[layer].id));
-    if ( layers[layer].id.toString() == option.target.value.toString() ) {
+    if ( layers[layer].id.toString() == lastlayer.toString() ) {
        paint = layers[layer].paint;
     }
   }
@@ -310,7 +323,7 @@ function selectLayer(option) {
   document.querySelector('#paintpropes').style.display = 'block';
 
   // option 2 : getting the layer style, but it returns undefined
-  // let layer = map.getLayer(option);
+  // let layer = map.getLayer(lastlayer);
   // console.log( 'this is the layer : ' + JSON.stringify(layer) );
   // let paint = layer.getPaintAffectingGlobalStateRefs(); 
   // console.log( 'this is the layer paint : ' + JSON.stringify(paint) );
@@ -346,8 +359,9 @@ document.addEventListener('DOMContentLoaded', function() {
      modhelp.style.display='none';;
   });
 
-
   createMap();
+
+  setInterval( getZoom, 500 );
 
 });
 
@@ -378,6 +392,8 @@ function createMap() {
     console.log('onload');
     updateLayers();
     loading.style.display = "none";
+    lastlayer = 'background';
+    setLastLayer();
   });
 
 }
@@ -395,13 +411,11 @@ function updateLayers() {
        opt.value = layer.id
        layyours.options.add(opt);
     }
-    map.setLayoutProperty('background', 'visibility', 'visible');
     layyours.addEventListener('change', selectLayer);
     gustom += pustom+'const layers = map.getStyle().layers;\n';
     gustom += pustom+'for (const layer of layers) {\n';
     gustom += pustom+'   map.setLayoutProperty(layer.id, "visibility", "none");\n';
     gustom += pustom+'}\n';
-    gustom += pustom+'map.setLayoutProperty("background", "visibility", "visible");\n';
     // console.log(layers);
     // console.log(layers.map(l => l.id));
 }

@@ -24,6 +24,7 @@
                    height: 150px; width: 350px; bottom: 50px; right: 50px }
     #save { position: absolute; bottom: 50px; left: 20px }
     #the-close { float: right; }
+    #zoom { position: absolute; top: 100px; right: 10px; height: 20px; width: 100px; font-size: 14px; text-align: right;}
     #the-help { position: absolute; top: 10px; right: 50px }
     #dosave { background: #ae782355; color: #000000; }
 
@@ -62,6 +63,7 @@
 </div>
 <select id="layyours"></select>
 <div id="paintpropes"></div>
+<div id="zoom"></div>
 <div id="save">
 <input id="mapname" type="text" cols=40 placeholder="Map Name" />
 <input id="dosave" type="submit" value="Save this Map" />
@@ -138,6 +140,11 @@ function postIt(e) {
   }).fail( function(xhr, status, error) {
              alertify.alert('Couldn\'t save your map<br/>Error : ' + error);
   });
+}
+
+function getZoom(e) {
+  console.log("Zoom : " + (Math.round(map.getZoom() * 100) / 100).toFixed(2) );
+  document.querySelector('#zoom').innerHTML = "Zoom : " + (Math.round(map.getZoom() * 100) / 100).toFixed(2);
 }
 
 function applyPropes(e) {
@@ -352,8 +359,9 @@ document.addEventListener('DOMContentLoaded', function() {
      modhelp.style.display='none';;
   });
 
-
   createMap();
+
+  setInterval( getZoom, 500 );
 
 });
 
