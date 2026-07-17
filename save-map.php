@@ -3,7 +3,7 @@
 $SKELETON = 'skeleton.html';
 
 function is_ascii( $string = '' ) {
-  return ( bool ) preg_match( '/^[_a-zA-Z0-9-]+$/' , $string );
+  return ( bool ) preg_match( '/^[_a-zA-Z0-9-éèàûôçâ]+$/' , $string );
 }
 
   if ( empty($_POST['name']) )

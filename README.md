@@ -25,7 +25,7 @@ at first, then you can choose the layers you want to configure in it.
 
 You can check some maps created with this tool :
 
-   - [Ice Age](https://giss.tv/mapalacarte/map-blue.html)
+   - [Ice Age](https://giss.tv/mapalacarte/map-ice.html)
    - [Earth On Fire](https://giss.tv/mapalacarte/map-fire.html)
 
 We would appreciate that you would support our work
