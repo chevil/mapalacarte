@@ -25,7 +25,7 @@ function is_ascii( $string = '' ) {
      exit(-1);
   }
   $mapname = $_POST['name'];
-  $filename = 'map-'.$mapname.'.html';
+  $filename = 'maps/map-'.$mapname.'.html';
   $gustom = $_POST['gustom'];
   if ( empty($gustom) )
   {
