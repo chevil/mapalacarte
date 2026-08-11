@@ -40,7 +40,7 @@ function is_ascii( $string = '' ) {
   if ($rsize) {
     header('HTTP/1.1 200 OK');	  
     $sdir = str_replace( 'save-map.php', '', $_SERVER['REQUEST_URI'] );
-    print( 'https://'.$_SERVER['SERVER_NAME'].$sdir.$filename );
+    print( 'http://'.$_SERVER['SERVER_NAME'].$sdir.$filename );
     exit(0);
   } else {
     header('HTTP/1.1 406 Map could not be saved, check permissions ');
