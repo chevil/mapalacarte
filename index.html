@@ -84,7 +84,7 @@
       This is a tool to create your own map, in the traditional sense of the term, but not with tiles, mas bien with layers rendered in WebGL using the code of the <a href='https://maplibre.org/' target=_blank>MapLibre GL JS</a> project.<br/><br/>
       You have 3 basic themes here, provided by Map Libre GL, and when you load the page, one theme is already selected for you. You can change the theme you want to work with by clicking the radio theme box.<br/><br/>
       In the selection menu below, you have the list of layers of the theme you chose, it is different for each theme provided. When loading a theme, all the layers are hidden by default.<br/><br/>
-      When you select a layer, a window opens with all the CSS-like parameters of that layer that you can set for this layer. You can set the values as you like and click on 'Set' and your layer should appear with the values that you have set.<br/><br/>
+      When you select a layer, a window opens with all the CSS-like parameters of that layer that you can set for this layer. You can set the values as you like and click on 'Show' and your layer should appear with the values that you have set.<br/><br/>
       If you set wrong parameters, do not worry as your values will not be considered and you should try again.<br/><br/>
       If you don't see your layer, remember that some layers are only visible at certain zoom values, so try to zoom in and out to make them appear.<br/><br/>
       Common layers you should set to see your map are things like : water, park, label_city, boundary_2 (frontiers), ...<br/><br/>
@@ -317,7 +317,7 @@ function setLastLayer() {
        temele += '<tr><td>'+key+'</td>';
        temele += '<td><input type=text value="'+paint[key]+'" name="'+key+'"></input></td></tr>';
   }
-  temele += '<tr><td colspan=2 align=center><input type=submit value="Set"></input></td></tr>';
+  temele += '<tr><td colspan=2 align=center><input type=submit value="Show"></input></td></tr>';
   temele += '</table></form>';
   document.querySelector('#paintpropes').innerHTML = temele;
   document.querySelector('#paintpropes').style.display = 'block';
