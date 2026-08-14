@@ -13,7 +13,7 @@ images but we can make our own and change their styles at will.
 The rendering is then personalized and unique.
 
 This was first implemented in 2014 by [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/guides/),
-than a free fork appeared in 2020 under the name
+then a free fork appeared in 2020 under the name
 of [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/).
 
 For the needs of a project with Paris 8 University about forced migration,
@@ -27,9 +27,6 @@ You can check some maps created with this tool :
 
    - [Ice Age](https://giss.tv/mapalacarte/maps/map-ice.html)
    - [Earth On Fire](https://giss.tv/mapalacarte/maps/map-fire.html)
-
-We would appreciate that you would support our work
-with a donation to [GISS.tv](http://giss.tv).
 
 <b>AUTHORS</b>
 
@@ -45,4 +42,8 @@ exploitation & repression :
 
 https://firstdonoharm.dev/ 
 
-Enjoy and thanks/donations to [GISS.tv](http://giss.tv).
+We would appreciate that you would support our work
+with a donation to [GISS.tv](http://giss.tv).
+
+Enjoy ( your freedom ? ) !!
+

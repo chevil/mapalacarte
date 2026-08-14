@@ -15,6 +15,7 @@ bin/
 gen/
 out/
 maps/
+pbf/
 
 # Gradle files
 .gradle/*
