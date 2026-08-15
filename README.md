@@ -28,6 +28,10 @@ You can check some maps created with this tool :
    - [Ice Age](https://giss.tv/mapalacarte/maps/map-ice.html)
    - [Earth On Fire](https://giss.tv/mapalacarte/maps/map-fire.html)
 
+A live installation is available here : 
+
+   - [Try It](https://giss.tv/mapalacarte)
+
 <b>AUTHORS</b>
 
    - concept and programming : chevil@giss.tv
