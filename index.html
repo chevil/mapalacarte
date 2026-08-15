@@ -19,14 +19,29 @@
     #map { width: 100vw; height: 100vh; }
     #layyours { position: absolute; top: 50px; left: 20px; background: #ae782355; color: #000000; }
     #themes { position: absolute; top: 10px; left: 20px; background: #ae782355; color: #000000; }
-    #paintpropes { position: absolute; z-index: 1000; background: #888888; 
-                   border-radius: 20px; padding: 10px; color: #ffffff; display: none;
+    #paintpropes { position: absolute; z-index: 1000; background: #ae782355; 
+                   border-radius: 20px; padding: 10px; color: #000000; display: none;
                    height: 150px; width: 350px; bottom: 50px; right: 50px }
     #save { position: absolute; bottom: 50px; left: 20px }
     #the-close { float: right; }
-    #zoom { position: absolute; top: 100px; right: 10px; height: 20px; width: 100px; font-size: 14px; text-align: right;}
+    #zoom { position: absolute; 
+            top: 100px; 
+            right: 10px; 
+            height: 20px; 
+            width: 300px; 
+            font-size: clamp(1rem, 2vw, 2rem); 
+            text-align: right; 
+            color: red;}
+
     #the-help { position: absolute; top: 10px; right: 50px }
     #dosave { background: #ae782355; color: #000000; }
+    #hideandshow { position: absolute; 
+                   padding: 10px; 
+                   border-radius: 20px;
+                   top: 80px; 
+                   left: 20px; 
+                   background: #ae782355; 
+                   color: #000000;  }
 
     .modal {
       display: none; /* Hidden by default */
@@ -37,11 +52,11 @@
       width: 100%; /* Full width */
       height: 100%; /* Full height */
       overflow: auto; /* Enable scroll if needed */
-      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      background-color: #00000000; /* Transparent */
     }
     
     .modal-content {
-      background-color: #fefefe;
+      background-color: #ae782355;
       margin: 15% auto; /* 15% from the top and centered */
       padding: 20px;
       border: 1px solid #888;
@@ -62,6 +77,7 @@
     <label for="positron">Positron</label>
 </div>
 <select id="layyours"></select>
+<div id="hideandshow">Hide Layers</div>
 <div id="paintpropes"></div>
 <div id="zoom"></div>
 <div id="save">
@@ -81,10 +97,10 @@
       </div>
       <center><h4>Help</h4></center>
       <font size=-1>
-      This is a tool to create your own map, in the traditional sense of the term, but not with tiles, mas bien with layers rendered in WebGL using the code of the <a href='https://maplibre.org/' target=_blank>MapLibre GL JS</a> project.<br/><br/>
+      This is a tool to create your own map, in the traditional sense of the term, but not with tiles, but with layers rendered in WebGL using the code of the <a href='https://maplibre.org/' target=_blank>MapLibre GL JS</a> project.<br/><br/>
       You have 3 basic themes here, provided by Map Libre GL, and when you load the page, one theme is already selected for you. You can change the theme you want to work with by clicking the radio theme box.<br/><br/>
-      In the selection menu below, you have the list of layers of the theme you chose, it is different for each theme provided. When loading a theme, all the layers are hidden by default.<br/><br/>
-      When you select a layer, a window opens with all the CSS-like parameters of that layer that you can set for this layer. You can set the values as you like and click on 'Show' and your layer should appear with the values that you have set.<br/><br/>
+      In the selection menu below, you have the list of layers of the theme you chose, it is different for each theme provided. When loading a theme, all the layers are shown by default, but you have a 'Hide Layers' button that lets you start from a blank page.<br/><br/>
+      When you select a layer, a window opens with all the CSS-like parameters of that layer that you can set for this layer. You can set the values as you like and click on 'Show' and your layer should appear with the values that you entered.<br/><br/>
       If you set wrong parameters, do not worry as your values will not be considered and you should try again.<br/><br/>
       If you don't see your layer, remember that some layers are only visible at certain zoom values, so try to zoom in and out to make them appear.<br/><br/>
       Common layers you should set to see your map are things like : water, park, label_city, boundary_2 (frontiers), ...<br/><br/>
@@ -104,12 +120,16 @@
 let map = null;
 let paint = null;
 let lastlayer = null;
+let hideCode = '';
+let hidden = false;
 let gustom = '';
 let pustom = '    ';
 let addXode = '';
 let gtheme = 'liberty';
 let loading = null;
 let modhelp = null;
+let dosave = null;
+let hideandshow = null;
 
 var strstr = function (haystack, needle) {
   if (needle.length === 0) return -1;
@@ -119,7 +139,36 @@ var strstr = function (haystack, needle) {
     }
   }
   return -1;
-};
+}
+
+function showLayers() {
+    hideCode = pustom+'const layers = map.getStyle().layers;\n';
+    hideCode += pustom+'for (const layer of layers) {\n'
+    hideCode += pustom+'    map.setLayoutProperty(layer.id, \'visibility\', \'visible\');\n'
+    hideCode += pustom+'}\n'
+    eval( hideCode );
+}
+
+function hideLayers() {
+    hideCode = pustom+'const layers = map.getStyle().layers;\n';
+    hideCode += pustom+'for (const layer of layers) {\n'
+    hideCode += pustom+'    map.setLayoutProperty(layer.id, \'visibility\', \'none\');\n'
+    hideCode += pustom+'}\n'
+    eval( hideCode );
+}
+
+function hideShow() {
+  // console.log( 'hide and sick : hidden : ' + hidden)
+  if ( hidden === true ) {
+    hidden = false;
+    showLayers();
+    hideandshow.innerHTML = 'Hide Layers';
+  } else {
+    hidden = true; 
+    hideLayers();
+    hideandshow.innerHTML = 'Show Layers';
+  }
+}
 
 function postIt(e) {
   const mapname = document.getElementById( "mapname");
@@ -130,7 +179,7 @@ function postIt(e) {
   $.post('save-map.php', 
         {
           name: mapname.value,
-          gustom : gustom,
+          gustom : hideCode + gustom,
           theme : gtheme
         }
   ).done( function(location){  
@@ -143,8 +192,8 @@ function postIt(e) {
 }
 
 function getZoom(e) {
-  console.log("Zoom : " + (Math.round(map.getZoom() * 100) / 100).toFixed(2) );
-  document.querySelector('#zoom').innerHTML = "Zoom : " + (Math.round(map.getZoom() * 100) / 100).toFixed(2);
+  // console.log("Zoom : " + (Math.round(map.getZoom() * 100) / 100).toFixed(2) );
+  document.querySelector('#zoom').innerHTML = "z : " + (Math.round(map.getZoom() * 100) / 100).toFixed(2);
 }
 
 function applyPropes(e) {
@@ -335,8 +384,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   loading = document.getElementById("loading");
   modhelp = document.getElementById("modal-help");
-  const dosave = document.getElementById("dosave");
+  dosave = document.getElementById("dosave");
+  hideandshow = document.getElementById("hideandshow");
+
   dosave.addEventListener('click', postIt);
+  hideandshow.addEventListener('click', hideShow);
 
   // arm theme chooser
   const themeList = document.getElementById('themes');
@@ -344,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
   for (const theme of themes) {
      theme.onclick = (theme) => {
          // hide all layers
-         updateLayers();
+         hideLayers();
          gtheme = theme.target.id;
          console.log( 'Theme set to :' + gtheme );
          createMap();
@@ -403,19 +455,24 @@ function updateLayers() {
     const layers = map.getStyle().layers;
     const layyours = document.getElementById("layyours");
     $("#layyours").empty();
+
+    // show all layers by default
+    hideCode = pustom+'const layers = map.getStyle().layers;\n';
+    hideCode += pustom+'for (const layer of layers) {\n'
+    hideCode += pustom+'    map.setLayoutProperty(layer.id, \'visibility\', \'visible\');\n'
+    hideCode += pustom+'}\n'
+    eval( hideCode );
+
+    // create an option for each layer
     for (const layer of layers) {
-       map.setLayoutProperty(layer.id, 'visibility', 'none');
        console.log(layer.id );
        var opt = document.createElement("option"); 
        opt.text = layer.id;
        opt.value = layer.id
        layyours.options.add(opt);
     }
+
     layyours.addEventListener('change', selectLayer);
-    gustom += pustom+'const layers = map.getStyle().layers;\n';
-    gustom += pustom+'for (const layer of layers) {\n';
-    gustom += pustom+'   map.setLayoutProperty(layer.id, "visibility", "none");\n';
-    gustom += pustom+'}\n';
     // console.log(layers);
     // console.log(layers.map(l => l.id));
 }
