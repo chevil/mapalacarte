@@ -9,10 +9,13 @@
   <link href="css/alertify.core.css" rel="stylesheet">
   <link href="css/alertify.default.css" rel="stylesheet">
   <link href="css/font-awesome.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/dropzone.min.css" type="text/css" />
+
 
   <script src="https://unpkg.com/maplibre-gl@4.x/dist/maplibre-gl.js"></script>
   <script src="js/jquery-3.7.1.js"></script>
   <script src="js/alertify.min.js"></script>
+  <script src="js/dropzone.min.js"></script>
 
   <style>
     body { margin: 0; padding: 0; }
@@ -23,7 +26,7 @@
                    border-radius: 20px; padding: 10px; color: #000000; display: none;
                    height: 150px; width: 350px; bottom: 50px; right: 50px }
     #save { position: absolute; bottom: 50px; left: 20px }
-    #the-close { float: right; }
+    #the-close, #dz-close { float: right; }
     #zoom { position: absolute; 
             top: 100px; 
             right: 10px; 
@@ -42,11 +45,22 @@
                    left: 20px; 
                    background: #ae782355; 
                    color: #000000;  }
+    #addlayer { position: absolute; 
+                   padding: 10px; 
+                   border-radius: 20px;
+                   top: 130px; 
+                   left: 20px; 
+                   background: #ae782355; 
+                   color: #000000;  }
+
+    .dropzone {
+      border: 0px solid #888;
+    }
 
     .modal {
       display: none; /* Hidden by default */
       position: fixed; /* Stay in place */
-      z-index: 1; /* Sit on top */
+      z-index: 1000; /* Sit on top */
       left: 0;
       top: 0;
       width: 100%; /* Full width */
@@ -56,10 +70,11 @@
     }
     
     .modal-content {
-      background-color: #ae782355;
+      background-color: #ffffff;
       margin: 15% auto; /* 15% from the top and centered */
       padding: 20px;
-      border: 1px solid #888;
+      z-index: 1000; /* Sit on top */
+      border: 0px solid #888;
       width: 40%; /* Could be more or less, depending on screen size */
     }
     
@@ -78,6 +93,7 @@
 </div>
 <select id="layyours"></select>
 <div id="hideandshow">Hide Layers</div>
+<div id="addlayer">Add Layer</div>
 <div id="paintpropes"></div>
 <div id="zoom"></div>
 <div id="save">
@@ -115,7 +131,18 @@
    <i id="help" class="fa fa-question-circle fa-2x" aria-hidden="true" ></i>
 </div>
 
+<div class="modal" id="modal-dz">
+    <div class="modal-content">
+      <div id="dz-close">
+         <i class="fa fa-times"></i>
+      </div>
+      <form action="save-gjson.php" class="dropzone" id="upload-gjson"></form>
+    </div>
+</div>
+
 <script>
+
+Dropzone.autoDiscover = false;
 
 let map = null;
 let paint = null;
@@ -128,8 +155,10 @@ let addXode = '';
 let gtheme = 'liberty';
 let loading = null;
 let modhelp = null;
+let moddz = null;
 let dosave = null;
 let hideandshow = null;
+let ugjson = null;
 
 var strstr = function (haystack, needle) {
   if (needle.length === 0) return -1;
@@ -384,6 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   loading = document.getElementById("loading");
   modhelp = document.getElementById("modal-help");
+  moddz = document.getElementById("modal-dz");
   dosave = document.getElementById("dosave");
   hideandshow = document.getElementById("hideandshow");
 
@@ -409,6 +439,26 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   $('#the-close').on('click', function() {
      modhelp.style.display='none';;
+  });
+
+  // drop yourself
+  $('#addlayer').on('click', function() {
+     if ( ugjson != null ) ugjson.removeAllFiles();
+     moddz.style.display='block';;
+  });
+  $('#dz-close').on('click', function() {
+     moddz.style.display='none';;
+  });
+
+  ugjson = new Dropzone( '#upload-gjson', {
+    paramName: "file", // The name that will be used to transfer the file
+    maxFilesize: 100, // MB
+    maxFiles: 1,
+    addRemoveLinks : true,
+    accept: function(file, done) {
+       console.log( 'got : ' + file.name, file );
+       done();
+    }
   });
 
   createMap();
@@ -465,7 +515,7 @@ function updateLayers() {
 
     // create an option for each layer
     for (const layer of layers) {
-       console.log(layer.id );
+       // console.log(layer.id );
        var opt = document.createElement("option"); 
        opt.text = layer.id;
        opt.value = layer.id
