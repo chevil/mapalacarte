@@ -31,10 +31,16 @@ function is_ascii( $string = '' ) {
   {
      $gustom = '';
   }
+  $addCss = $_POST['addCss'];
+  if ( empty($addCss) )
+  {
+     $addCss = '';
+  }
 
   $templette = file_get_contents ($SKELETON);
   $templute = str_replace( '// CUSTOM CODE', "// CUSTOM CODE\n".$gustom, $templette );
-  $tempflute = str_replace( 'THEME', $theme, $templute );
+  $template = str_replace( '// ADDED CSS', "// ADDED CSS\n".$addCss, $templute );
+  $tempflute = str_replace( 'THEME', $theme, $template );
   $rsize = file_put_contents($filename, $tempflute);
 
   if ($rsize) {

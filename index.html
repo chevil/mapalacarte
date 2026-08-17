@@ -160,6 +160,7 @@ let hidden = false;
 let gustom = '';
 let pustom = '    ';
 let addXode = '';
+let addCss = '';
 let gtheme = 'liberty';
 let loading = null;
 let modhelp = null;
@@ -219,6 +220,7 @@ function postIt(e) {
         {
           name: mapname.value,
           gustom : hideCode + gustom,
+          addCss : addCss,
           theme : gtheme
         }
   ).done( function(location){  
@@ -237,18 +239,24 @@ function getZoom(e) {
 
 function applyPropes(e) {
 
+  addXode = "";
   try {
       for (var key in paint) {
         let value = document.querySelector('input[name='+key+']').value;
         console.log( key + " ==> " + value );
-        addXode = pustom+'setValue("'+lastlayer+'", "'+key+'", "'+value+'" );\n';
+        addXode += pustom+'setValue("'+lastlayer+'", "'+key+'", "'+value+'" );\n';
         setValue(lastlayer,key,value);
-        gustom += addXode;
       }
 
       // layer modified, set visible
       map.setLayoutProperty(lastlayer, "visibility", "visible");
-      gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "visible");\n';
+      addXode += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "visible");\n';
+
+      if ( strstr( lastlayer, 'added' ) >= 0 ) {
+        addCss += addXode;
+      } else {
+        gustom += addXode;
+      }
 
   } catch (e) {
     console.error(e);
@@ -390,7 +398,11 @@ function setLastLayer() {
 
   // suppress layer first
   map.setLayoutProperty(lastlayer, 'visibility', 'none');
-  gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "none");\n';
+  if ( strstr( lastlayer, 'added' ) >= 0 ) {
+    addCss += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "none");\n';
+  } else {
+    gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "none");\n';
+  }
 
   // option 1 : getting the big map style
   let styleJson = map.getStyle();
@@ -488,7 +500,7 @@ document.addEventListener('DOMContentLoaded', function() {
          moddz.style.display='none';
          nbal++; // number of added layers
          if ( map != null ) {
-            let layerCode = 'let geojson = null;';
+            let layerCode = pustom+'let geojson = null;\n';
             layerCode += pustom+'fetch(\''+fileurl+'\').then(response => response.json())\n';
             layerCode += pustom+'.then( geojson => {;\n';
             layerCode += pustom+'    map.addSource(\'as-'+nbal+'\', {\n';
