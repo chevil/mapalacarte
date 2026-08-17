@@ -253,7 +253,9 @@ function applyPropes(e) {
       addXode += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "visible");\n';
 
       if ( strstr( lastlayer, 'added' ) >= 0 ) {
+        addCss += pustom+'if (map.getLayer('+lastlayer+')) {\n';
         addCss += addXode;
+        addCss += pustom+'}\n';
       } else {
         gustom += addXode;
       }
@@ -399,7 +401,9 @@ function setLastLayer() {
   // suppress layer first
   map.setLayoutProperty(lastlayer, 'visibility', 'none');
   if ( strstr( lastlayer, 'added' ) >= 0 ) {
-    addCss += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "none");\n';
+    addCss += pustom+'if (map.getLayer('+lastlayer+')) {\n';
+    addCss += pustom+'   map.setLayoutProperty("'+lastlayer+'", "visibility", "none");\n';
+    addCss += pustom+'}\n';
   } else {
     gustom += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "none");\n';
   }
