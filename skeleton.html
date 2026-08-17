@@ -34,6 +34,12 @@ var strstr = function (haystack, needle) {
 
 function setValue(layer, key, value) {
 
+      var ivalue = map.getPaintProperty(layer, key );
+      if ( ivalue == value ) {
+        // nothing to do, no change
+        return;
+      }
+
       if ( value == 'true' ) {
           map.setPaintProperty(layer, key, true);
       }
