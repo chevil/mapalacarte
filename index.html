@@ -167,6 +167,7 @@ let moddz = null;
 let dosave = null;
 let hideandshow = null;
 let ugjson = null;
+let nbal = 0;
 let dgjson = null;
 
 var strstr = function (haystack, needle) {
@@ -266,8 +267,8 @@ function setValue(layer, key, value) {
           map.setPaintProperty(layer, key, false);
       }
       else if ( strstr( key, 'opacity' ) >= 0 ||
-                  strstr( key, 'blur' ) >= 0 ||
-                  strstr( key, 'width' ) >= 0 ) { // accepts float
+                strstr( key, 'blur' ) >= 0 ||
+                strstr( key, 'width' ) >= 0 ) { // accepts float
           if ( strstr( value, 'interpolate' ) >= 0 ) { // accepts interpolation expression
             // build expression if necessary
             let expression = null;
@@ -458,20 +459,98 @@ document.addEventListener('DOMContentLoaded', function() {
   // drop yourself
   $('#addlayer').on('click', function() {
      if ( ugjson != null ) ugjson.removeAllFiles();
-     moddz.style.display='block';;
+     moddz.style.display='block';
   });
   $('#dz-close').on('click', function() {
-     moddz.style.display='none';;
+     moddz.style.display='none';
   });
 
   ugjson = new Dropzone( '#upload-gjson', {
     paramName: "file", // The name that will be used to transfer the file
     maxFilesize: 100, // MB
     maxFiles: 1,
-    addRemoveLinks : true,
+    dictDefaultMessage: 'Upload GeoJSON data by clicking here',
+    addRemoveLinks: true,
+    acceptedFiles: 'application/json',
     accept: function(file, done) {
-       console.log( 'got : ' + file.name, file );
+       // console.log( 'got : ' + file.name, file );
        done();
+    },
+    init: function() {
+      this.on('success', (file, fileurl ) => {
+         console.log('Uploaded : ', fileurl );
+         moddz.style.display='none';
+         nbal++; // number of added layers
+         if ( map != null ) {
+            let layerCode = 'let geojson = null;';
+            layerCode += pustom+'fetch(\''+fileurl+'\').then(response => response.json())\n';
+            layerCode += pustom+'.then( geojson => {;\n';
+            layerCode += pustom+'    map.addSource(\'as-'+nbal+'\', {\n';
+            layerCode += pustom+'      type: \'geojson\',\n';
+            layerCode += pustom+'      data: geojson\n';
+            layerCode += pustom+'    });\n';
+            layerCode += pustom+'\n';  
+ 
+            // Polygons layer
+            layerCode += pustom+'    if (strstr(JSON.stringify(geojson),\'Polygon\') > 0 ) {\n';
+            layerCode += pustom+'      map.addLayer({\n';
+            layerCode += pustom+'       id: \'added-polygons-'+nbal+'\',\n';
+            layerCode += pustom+'       type: \'fill\',\n';
+            layerCode += pustom+'       source: \'as-'+nbal+'\',\n';
+            layerCode += pustom+'       filter: [ \'==\', [\'geometry-type\'] , \'Polygon\' ],\n';
+            layerCode += pustom+'       paint: {\n';
+            layerCode += pustom+'         \'fill-color\': \'#00000000\', // transparent\n';
+            layerCode += pustom+'         \'fill-outline-color\': \'#ff0000\', // red\n';
+            layerCode += pustom+'         \'fill-opacity\': 1.0\n';
+            layerCode += pustom+'       }\n';
+            layerCode += pustom+'      });\n';  
+            layerCode += pustom+'    }\n';  
+            layerCode += pustom+'\n';  
+
+            // Lines layer
+            layerCode += pustom+'    if (strstr(JSON.stringify(geojson),\'LineString\') > 0 ) {\n';
+            layerCode += pustom+'      map.addLayer({\n';
+            layerCode += pustom+'       id: \'added-lines-'+nbal+'\',\n';
+            layerCode += pustom+'       type: \'line\',\n';
+            layerCode += pustom+'       source: \'as-'+nbal+'\',\n';
+            layerCode += pustom+'       filter: [ \'==\', [\'geometry-type\'] , \'LineString\' ],\n';
+            layerCode += pustom+'       paint: {\n';
+            layerCode += pustom+'         \'line-color\': \'#ff0000\', // red\n';
+            layerCode += pustom+'         \'line-width\': 1.0\n';
+            layerCode += pustom+'       }\n';
+            layerCode += pustom+'      });\n';  
+            layerCode += pustom+'    }\n';  
+            layerCode += pustom+'\n';  
+
+            // Points layer
+            layerCode += pustom+'    if (strstr(JSON.stringify(geojson),\'Point\') > 0 ) {\n';
+            layerCode += pustom+'      map.addLayer({\n';
+            layerCode += pustom+'       id: \'added-points-'+nbal+'\',\n';
+            layerCode += pustom+'       type: \'circle\',\n';
+            layerCode += pustom+'       source: \'as-'+nbal+'\',\n';
+            layerCode += pustom+'       filter: [ \'==\', [\'geometry-type\'] , \'Point\' ],\n';
+            layerCode += pustom+'       paint: {\n';
+            layerCode += pustom+'         \'circle-radius\': 5, // red\n';
+            layerCode += pustom+'         \'circle-color\': \'#ff0000\'\n';
+            layerCode += pustom+'       }\n';
+            layerCode += pustom+'      });\n';  
+            layerCode += pustom+'    }\n';  
+            layerCode += pustom+'\n';  
+            layerCode += pustom+'    updateLayers();\n';
+            layerCode += pustom+'});\n';
+
+            // add the layers
+            eval( layerCode );
+            gustom += layerCode;
+
+            alertify.alert( 'Added new layers called \'added-*-'+nbal+'\' in red' );
+         }
+      });
+      this.on('error', (file, response ) => {
+         console.log('Upload failed : ' + response );
+         moddz.style.display='none';
+         alertify.alert( 'Upload failed : ' + response );
+      });
     }
   });
 
