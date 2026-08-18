@@ -129,6 +129,7 @@
       If you don't see your layer, remember that some layers are only visible at certain zoom values, so try to zoom in and out to make them appear.<br/><br/>
       Common layers you should set to see your map are things like : water, park, label_city, boundary_2 (frontiers), ...<br/><br/>
       Don't get intimated with parameters starting with 'interpolate, ...', it usually means the value is changing according to the zoom, but you can enter a simple value as well.<br/><br/>
+      Finally, you can also add your own layers from your GeoJSON data by importing it, then you can configure the visual aspect of these added layers by selecting 'added-*' layers in the dropdown menu.<br/><br/>
       Once all the layers you wish are configured, you can save your map, and you will be pointed to a simple version of your map to start your project with.<br/><br/>
       Enjoy and thanks or/and donations to <a href='https://giss.tv' target=_blank>GISS.tv</a>.
       </font>
@@ -169,7 +170,7 @@ let dosave = null;
 let hideandshow = null;
 let ugjson = null;
 let nbal = 0;
-let dgjson = null;
+let gjson = null;
 
 var strstr = function (haystack, needle) {
   if (needle.length === 0) return -1;
@@ -500,11 +501,11 @@ document.addEventListener('DOMContentLoaded', function() {
     },
     init: function() {
       this.on('success', (file, fileurl ) => {
-         console.log('Uploaded : ', fileurl );
+                 console.log('Uploaded : ', fileurl );
          moddz.style.display='none';
          nbal++; // number of added layers
          if ( map != null ) {
-            let layerCode = pustom+'let geojson = null;\n';
+            let layerCode = pustom+'geojson = null;\n';
             layerCode += pustom+'fetch(\''+fileurl+'\').then(response => response.json())\n';
             layerCode += pustom+'.then( geojson => {;\n';
             layerCode += pustom+'    map.addSource(\'as-'+nbal+'\', {\n';

@@ -20,8 +20,14 @@ For the needs of a project with Paris 8 University about forced migration,
 we created this little tool to create your own map
 and edit all the CSS-like parameters of each layer of your map.
 
-With a concern for visual lightness, the tool creates empty maps
-at first, then you can choose the layers you want to configure in it.
+You can choose, at first, to hide all layers and start your map from a blank page,
+or start to configure all the layers of the chosen theme.
+You can also leave defaults values to show a layer unchanged.
+
+A little trick : selecting a layer and leaving editing 
+without clicking 'Show' will hide this layer.
+
+You can also add your own layers, provided you have the corresponding GeoJSON data.
 
 You can check some maps created with this tool :
 
