@@ -26,6 +26,7 @@
                    z-index: 100; 
                    background: #ffffff; 
                    border-radius: 20px; 
+                   border: 2px solid #000000; 
                    padding: 10px; 
                    color: #000000; 
                    display: none;
@@ -158,11 +159,13 @@ let paint = null;
 let lastlayer = null;
 let hideCode = '';
 let hidden = false;
+let igustom = `    // CUSTOM CODE`;
 let gustom = '';
 let pustom = '    ';
 let addXode = '';
+let iaddCss = `    // ADDED CSS`;
 let addCss = '';
-let gtheme = 'liberty';
+let gtheme = 'THEME';
 let loading = null;
 let modhelp = null;
 let moddz = null;
@@ -226,7 +229,7 @@ function postIt(e) {
         }
   ).done( function(location){  
              alertify.alert('Map saved here : <a target="_blank" href="' + location + '">'+location+'</a><br> \
-                             Use the source code of this page or only the marked CUSTOM CODE in your project.<br/> \
+                             If you want to continue editing your map, go to : <a target="_blank" href="' + location.replaceAll("maps/map-","index-") + '">'+location.replaceAll("maps/map-","index-")+'</a><br/> \
                              Enjoy and thanks or donations to <a target="_blank" href="https://giss.tv">GISS.tv</a>');
   }).fail( function(xhr, status, error) {
              alertify.alert('Couldn\'t save your map<br/>Error : ' + error);
@@ -245,13 +248,13 @@ function applyPropes(e) {
       for (var key in paint) {
         let value = document.querySelector('input[name='+key+']').value;
         console.log( key + " ==> " + value );
-        addXode += pustom+'setValue("'+lastlayer+'", "'+key+'", "'+value+'" );\n';
+        addXode += pustom+'setValue(\''+lastlayer+'\', \''+key+'\', \''+value+'\' );\n';
         setValue(lastlayer,key,value);
       }
 
       // layer modified, set visible
       map.setLayoutProperty(lastlayer, "visibility", "visible");
-      addXode += pustom+'map.setLayoutProperty("'+lastlayer+'", "visibility", "visible");\n';
+      addXode += pustom+'map.setLayoutProperty(\''+lastlayer+'\', \'visibility\', \'visible\');\n';
 
       if ( strstr( lastlayer, 'added' ) >= 0 ) {
         addCss += pustom+'if (map.getLayer(\''+lastlayer+'\')) {\n';
@@ -467,7 +470,7 @@ document.addEventListener('DOMContentLoaded', function() {
          hideLayers();
          gtheme = theme.target.id;
          console.log( 'Theme set to :' + gtheme );
-         createMap();
+         createMap(false);
      };
   }
 
@@ -577,19 +580,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  createMap();
+  createMap(true);
 
   setInterval( getZoom, 500 );
 
 });
 
-function createMap() {
+function createMap(firstTime) {
 
   console.log('create map');
   loading.style.display = "block";
 
   // inits
   gustom = '';
+  addCss = '';
+  if ( gtheme = 'THEME' ) gtheme = 'liberty';
+
   closePP();
 
   $("#map").innerHTML = "";
@@ -607,15 +613,19 @@ function createMap() {
   // Hide layers once the map is loaded
   map.on('load', () => {
     console.log('onload');
-    updateLayers();
+    updateLayers(firstTime);
     loading.style.display = "none";
     lastlayer = 'background';
     setLastLayer();
   });
 
+  if ( firstTime ) {
+    eval( igustom );
+    gustom = igustom + "\n";
+  } 
 }
 
-function updateLayers() {
+function updateLayers(firstTime) {
 
     const layers = map.getStyle().layers;
     const layyours = document.getElementById("layyours");
@@ -638,6 +648,12 @@ function updateLayers() {
     }
 
     layyours.addEventListener('change', selectLayer);
+
+    if ( firstTime ) {
+       eval( iaddCss );
+       addCss = iaddCss+"\n";
+    }
+
     // console.log(layers);
     // console.log(layers.map(l => l.id));
 }

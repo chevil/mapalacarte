@@ -3,6 +3,7 @@
 *.ap_
 
 map-*
+index-*
 
 # Files for the ART/Dalvik VM
 *.dex

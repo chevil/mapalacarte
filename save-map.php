@@ -1,6 +1,7 @@
 <?php
 
 $SKELETON = 'skeleton.html';
+$INDEX = 'index.html';
 
 function is_ascii( $string = '' ) {
   return ( bool ) preg_match( '/^[_a-zA-Z0-9-éèàûôçâ]+$/' , $string );
@@ -26,6 +27,7 @@ function is_ascii( $string = '' ) {
   }
   $mapname = $_POST['name'];
   $filename = 'maps/map-'.$mapname.'.html';
+  $ifilename = 'index-'.$mapname.'.html';
   $gustom = $_POST['gustom'];
   if ( empty($gustom) )
   {
@@ -37,11 +39,21 @@ function is_ascii( $string = '' ) {
      $addCss = '';
   }
 
+  $rsize = 0;
+
+  // save the map
   $templette = file_get_contents ($SKELETON);
   $templute = str_replace( '// CUSTOM CODE', "// CUSTOM CODE\n".$gustom, $templette );
   $template = str_replace( '// ADDED CSS', "// ADDED CSS\n".$addCss, $templute );
   $tempflute = str_replace( 'THEME', $theme, $template );
   $rsize = file_put_contents($filename, $tempflute);
+
+  // save the index
+  $templette = file_get_contents ($INDEX);
+  $templute = str_replace( '// CUSTOM CODE', addslashes($gustom), $templette );
+  $template = str_replace( '// ADDED CSS', addslashes($addCss), $templute );
+  $tempflute = str_replace( 'THEME', $theme, $template );
+  $rsize = file_put_contents($ifilename, $tempflute);
 
   if ($rsize) {
     header('HTTP/1.1 200 OK');	  
