@@ -226,7 +226,7 @@ function postIt(e) {
           name: mapname.value,
           gustom : hideCode + gustom,
           addCss : addCss,
-          theme : gtheme
+          theme : gtheme,
         }
   ).done( function(location){  
              alertify.alert('Map saved here : <a target="_blank" href="' + location + '">'+location+'</a><br> \
@@ -507,8 +507,8 @@ document.addEventListener('DOMContentLoaded', function() {
       this.on('success', (file, fileurl ) => {
                  console.log('Uploaded : ', fileurl );
          moddz.style.display='none';
-         nbal++; // number of added layers
          if ( map != null ) {
+            nbal++; // number of added layers
             let layerCode = pustom+'geojson = null;\n';
             layerCode += pustom+'fetch(\''+fileurl+'\').then(response => response.json())\n';
             layerCode += pustom+'.then( geojson => {;\n';
@@ -516,6 +516,7 @@ document.addEventListener('DOMContentLoaded', function() {
             layerCode += pustom+'      type: \'geojson\',\n';
             layerCode += pustom+'      data: geojson\n';
             layerCode += pustom+'    });\n';
+            layerCode += pustom+'nbal++;\n';
             layerCode += pustom+'\n';  
  
             // Polygons layer
@@ -595,7 +596,7 @@ function createMap(firstTime) {
   // inits
   gustom = '';
   addCss = '';
-  if ( gtheme = 'THEME' ) gtheme = 'liberty';
+  if ( gtheme == 'THEME' ) gtheme = 'liberty';
 
   closePP();
 
