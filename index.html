@@ -617,12 +617,12 @@ function createMap(firstTime) {
     loading.style.display = "none";
     lastlayer = 'background';
     setLastLayer();
+    if ( firstTime ) {
+      eval( igustom );
+      gustom = igustom + "\n";
+    } 
   });
 
-  if ( firstTime ) {
-    eval( igustom );
-    gustom = igustom + "\n";
-  } 
 }
 
 function updateLayers(firstTime) {
