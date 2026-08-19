@@ -50,14 +50,14 @@
     #hideandshow { position: absolute; 
                    padding: 10px; 
                    border-radius: 20px;
-                   top: 80px; 
+                   top: 130px; 
                    left: 20px; 
                    background: #ae782355; 
                    color: #000000;  }
     #addlayer { position: absolute; 
                    padding: 10px; 
                    border-radius: 20px;
-                   top: 130px; 
+                   top: 80px; 
                    left: 20px; 
                    background: #ae782355; 
                    color: #000000;  }
@@ -157,6 +157,7 @@ Dropzone.autoDiscover = false;
 let map = null;
 let paint = null;
 let lastlayer = null;
+let layers = null;
 let hideCode = '';
 let hidden = false;
 let igustom = `    // CUSTOM CODE`;
@@ -186,7 +187,7 @@ var strstr = function (haystack, needle) {
 }
 
 function showLayers() {
-    hideCode = pustom+'const layers = map.getStyle().layers;\n';
+    hideCode = pustom+'layers = map.getStyle().layers;\n';
     hideCode += pustom+'for (const layer of layers) {\n'
     hideCode += pustom+'    map.setLayoutProperty(layer.id, \'visibility\', \'visible\');\n'
     hideCode += pustom+'}\n'
@@ -194,7 +195,7 @@ function showLayers() {
 }
 
 function hideLayers() {
-    hideCode = pustom+'const layers = map.getStyle().layers;\n';
+    hideCode = pustom+'layers = map.getStyle().layers;\n';
     hideCode += pustom+'for (const layer of layers) {\n'
     hideCode += pustom+'    map.setLayoutProperty(layer.id, \'visibility\', \'none\');\n'
     hideCode += pustom+'}\n'
@@ -562,7 +563,7 @@ document.addEventListener('DOMContentLoaded', function() {
             layerCode += pustom+'      });\n';  
             layerCode += pustom+'    }\n';  
             layerCode += pustom+'\n';  
-            layerCode += pustom+'    updateLayers();\n';
+            layerCode += pustom+'    updateLayers(true);\n';
             layerCode += pustom+'});\n';
 
             // add the layers
@@ -613,26 +614,29 @@ function createMap(firstTime) {
   // Hide layers once the map is loaded
   map.on('load', () => {
     console.log('onload');
-    updateLayers(firstTime);
-    loading.style.display = "none";
+    updateLayers(false);
+    loading.style.display = 'none';
     lastlayer = 'background';
     setLastLayer();
     if ( firstTime ) {
-      eval( igustom );
-      gustom = igustom + "\n";
+      if ( igustom.length > 20 ){ 
+         eval( igustom );
+         gustom = igustom + '\n';
+         hideandshow.style.display = 'none';
+      }
     } 
   });
 
 }
 
-function updateLayers(firstTime) {
+function updateLayers(applyCss) {
 
-    const layers = map.getStyle().layers;
+    layers = map.getStyle().layers;
     const layyours = document.getElementById("layyours");
     $("#layyours").empty();
 
     // show all layers by default
-    hideCode = pustom+'const layers = map.getStyle().layers;\n';
+    hideCode = pustom+'layers = map.getStyle().layers;\n';
     hideCode += pustom+'for (const layer of layers) {\n'
     hideCode += pustom+'    map.setLayoutProperty(layer.id, \'visibility\', \'visible\');\n'
     hideCode += pustom+'}\n'
@@ -649,7 +653,7 @@ function updateLayers(firstTime) {
 
     layyours.addEventListener('change', selectLayer);
 
-    if ( firstTime ) {
+    if ( applyCss ) {
        eval( iaddCss );
        addCss = iaddCss+"\n";
     }
