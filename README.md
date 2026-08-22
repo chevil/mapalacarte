@@ -24,9 +24,6 @@ You can choose, at first, to hide all layers and start your map from a blank pag
 or start to configure all the layers of the chosen theme.
 You can also leave defaults values to show a layer unchanged.
 
-A little trick : selecting a layer and leaving editing 
-without clicking 'Show' will hide this layer.
-
 You can also add your own layers, provided you have the corresponding GeoJSON data.
 
 You can check some maps created with this tool :
@@ -43,6 +40,9 @@ A live installation is available here :
    - concept and programming : chevil@giss.tv
    - Paris 8 University initiator & coordinator : californiadream@free.fr
 
+We would appreciate that you would support our work
+with a donation to [GISS.tv](http://giss.tv).
+
 <b>LICENSE !important</b>
 
 This piece of software is published under the terms
@@ -51,9 +51,6 @@ use of tools in this age of digital surveillance,
 exploitation & repression :
 
 https://firstdonoharm.dev/ 
-
-We would appreciate that you would support our work
-with a donation to [GISS.tv](http://giss.tv).
 
 Enjoy ( your freedom ? ) !!
 
