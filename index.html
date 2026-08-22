@@ -637,15 +637,6 @@ function updateLayers(applyCss) {
     const layyours = document.getElementById("layyours");
     $("#layyours").empty();
 
-    // show all layers by default
-    if ( !applyCss ) {
-       hideCode = pustom+'layers = map.getStyle().layers;\n';
-       hideCode += pustom+'for (const layer of layers) {\n'
-       hideCode += pustom+'    map.setLayoutProperty(layer.id, \'visibility\', \'visible\');\n'
-       hideCode += pustom+'}\n'
-       eval( hideCode );
-    }
-
     // create an option for each layer
     for (const layer of layers) {
        // console.log(layer.id );
